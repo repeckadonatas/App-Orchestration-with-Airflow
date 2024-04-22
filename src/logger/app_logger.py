@@ -3,15 +3,14 @@ A customized logger that is used throughout the project
 to log the responses of the app. A file is created daily
 to store all log messages for that day.
 """
-
+import logging.handlers
 import sys
-import logging
 from logging.handlers import RotatingFileHandler
 
-from source.constants import *
+from src.constants import *
 
 
-def get_console_handler():
+def get_console_handler() -> logging.StreamHandler:
     """
     A function to create a console handler object.
     Outputs the information starting at INFO level to a console.
@@ -24,7 +23,7 @@ def get_console_handler():
     return console_handler
 
 
-def get_file_handler():
+def get_file_handler() -> logging.handlers.RotatingFileHandler:
     """
     Creates a file handler object that stores log outputs.
     :return: returns .logs file
@@ -34,7 +33,7 @@ def get_file_handler():
     return file_handler
 
 
-def app_logger(logger_name):
+def app_logger(logger_name: str) -> logging.getLogger():
     """
     A function to create a logger object with set parameters.
     The parameters are inherited from get_console_handler() function.

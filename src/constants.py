@@ -6,6 +6,7 @@ import os
 import logging
 from pathlib import Path
 from datetime import datetime
+
 from dotenv import load_dotenv, find_dotenv
 
 
@@ -52,6 +53,7 @@ TABLE_MAPPING = {'gold': 'gold_historic',
                  'palladium': 'palladium_historic'}
 
 TRAINING_DATA_COLUMNS = ['rate_price', 'rate_ask']
+
 
 # REUSABLE REPEATABLE FUNCTIONS
 def env_config() -> os.environ:

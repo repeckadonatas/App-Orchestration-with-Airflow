@@ -1,21 +1,20 @@
-"""
-Database connection functions.
-Used to create a connection with a database
-and load data to it.
-"""
-
 import pandas as pd
 from sqlalchemy.engine import URL
 from sqlalchemy import create_engine, Table, Column, String, Float, Integer, TIMESTAMP, MetaData
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, DisconnectionError
 
-import source.logger as log
-from source.constants import *
+import src.logger as log
+from src.constants import *
 
 db_logger = log.app_logger(__name__)
 
 
 class MetalsPriceDataDatabase:
+    """
+    Database connection functions.
+    Used to create a connection with a database
+    and load data to it.
+    """
 
     def __init__(self):
         """
@@ -30,7 +29,7 @@ class MetalsPriceDataDatabase:
                                      host=self.params.get('PGHOST'),
                                      port=self.params.get('PGPORT'),
                                      database=self.params.get('PGDATABASE'))
-        except Exception as err:
+        except OperationalError as err:
             db_logger.error("A configuration error has occurred: %s", err)
 
     def __enter__(self):
@@ -44,7 +43,7 @@ class MetalsPriceDataDatabase:
             self.conn = self.engine.connect().execution_options(autocommit=True)
 
             db_logger.info("Connected to the database.")
-        except (Exception, AttributeError) as err:
+        except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError) as err:
             db_logger.error("The following connection error has occurred: %s", err)
         return self
 
@@ -66,7 +65,7 @@ class MetalsPriceDataDatabase:
         except (Exception, AttributeError, exc_type, exc_val, exc_tb) as err:
             db_logger.error("Connection was not closed: %s\n", err)
 
-    def create_tables(self) -> (Table | None):
+    def create_tables(self) -> Table:
         """
         Creates tables in a database if they do not exist.
         Returns a list of tables in a database.
@@ -138,8 +137,6 @@ class MetalsPriceDataDatabase:
             db_logger.error("An error occurred while loading the data: {}. Rolling back the last transaction".format(e))
             self.conn.rollback()
             
-    
-
 
 def metals_price_data_upload_to_db(queue: str, event: str) -> None:
     """
@@ -170,7 +167,6 @@ def metals_price_data_upload_to_db(queue: str, event: str) -> None:
                     db_logger.error('Table "{}" not found in the database'.format(table))
                     
                 queue.task_done()
-                
         except Exception as e:
             db_logger.error("An error occurred while loading the data: {}.".format(e), exc_info=True)
  

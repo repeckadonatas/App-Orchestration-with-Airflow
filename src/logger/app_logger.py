@@ -3,8 +3,8 @@ A customized logger that is used throughout the project
 to log the responses of the app. A file is created daily
 to store all log messages for that day.
 """
-import logging.handlers
 import sys
+import logging.handlers
 from logging.handlers import RotatingFileHandler
 
 from src.constants import *

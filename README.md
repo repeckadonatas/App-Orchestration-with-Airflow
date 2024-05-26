@@ -3,7 +3,7 @@
 
 ## About(FIX!!!!)
 
-This project is an exercise in translating business requirements into data engineering tasks. The project has to envelop the use of Python, SQL and Docker and the resulting data from the database must be utilised in training the ML model for predicting the priece of commodities (precious metals in this sample case). The database and ML models must be backed up periodically.
+This project is an exercise in translating business requirements into data engineering tasks. The project has to envelop the use of Python, SQL and Docker and the resulting data from the database must be utilised in training the ML model for predicting the price of commodities (precious metals in this sample case). The database and ML models must be backed up periodically.
 
 For real world price data a **[Metals.Dev](https://metals.dev/)** API is used. After the data is downloaded, it is then transformed and prepared to be uploaded to the database. 
 

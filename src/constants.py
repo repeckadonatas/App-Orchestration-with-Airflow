@@ -10,15 +10,16 @@ from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
 
 
+# DATE
+CURRENT_DATE = datetime.today().strftime("%Y%m%d_%H%m")
+
+
 # FOR LOGGER ONLY
 LOG_TIME = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 FORMATTER = logging.Formatter(f'{LOG_TIME} :: %(name)s :: %(levelname)s :: %(funcName)s :: %(message)s')
 PATH_TO_LOGS = Path(__file__).cwd()
 LOG_FILE = PATH_TO_LOGS / 'logs/' / ("app_logger_" + datetime.today().strftime("%Y%m%d") + ".log")
-
-# DATE
-CURRENT_DATE = datetime.today().strftime("%Y%m%d_%H%m")
 
 # FOR PG_DUMP FUNCTION
 # PG_DUMP_PATH = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  project-db:
+    image: postgres:15
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"  # SHOULD NOT BE USED IN PROD ENVIRONMENT!!
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 20s
+      retries: 5
+    volumes:
+      - project-db-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+#  project-app:
+#    image: notexists/commodities-price-prediction-app:1.0
+#    depends_on:
+#      project-db:
+#        condition: service_healthy
+#    environment:
+#      PGUSER: ${PGUSER}
+#      PGPASSWORD: ${PGPASSWORD}
+#      PGHOST: host.docker.internal
+#      PGPORT: ${PGPORT}
+#      PGDATABASE: ${PGDATABASE}
+#    volumes:
+#      # FOR PROD EVIRONMENT SHOULD BE SETUP APPROPRIATELY!
+#      # THIS IS FOR DEMONSTRATION PURPOSES!
+#      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
+#
+#      - C:\Users\HP\Desktop\TURING\Projects\Module 2\DE-Capstone-2\logs:/app/logs/
+#      - C:\Users\HP\Desktop\TURING\Projects\Module 2\DE-Capstone-2\trained_models:/app/trained_models/
+#
+#  backup-app:
+#    image: notexists/commodities-backup-app:1.0
+#    depends_on:
+#      project-db:
+#        condition: service_healthy
+#      project-app:
+#        condition: service_completed_successfully
+#    environment:
+#      PGUSER: ${PGUSER}
+#      PGPASSWORD: ${PGPASSWORD}
+#      PGHOST: host.docker.internal
+#      PGPORT: ${PGPORT}
+#      PGDATABASE: ${PGDATABASE}
+#    volumes:
+#      # FOR PROD EVIRONMENT SHOULD BE SETUP APPROPRIATELY!
+#      # THIS IS FOR DEMONSTRATION PURPOSES!
+#      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
+#      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/backups:/app/backups/
+#
+#      - C:\Users\HP\Desktop\TURING\Projects\Module 2\DE-Capstone-2\logs:/app/logs/
+#      - C:\Users\HP\Desktop\TURING\Projects\Module 2\DE-Capstone-2\backups:/app/backups/
+#      - C:\Users\HP\Desktop\TURING\Projects\Module 2\DE-Capstone-2\trained_models:/app/trained_models/
+
+volumes:
+  project-db-data:
+    driver: local

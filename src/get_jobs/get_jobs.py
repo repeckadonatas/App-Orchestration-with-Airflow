@@ -24,7 +24,7 @@ def get_metal_price_data(metals: list,
     A JSON file is created containing price data 
     for every precious metal as it's name is being provided.
     :param metals: a list with name values of a precious metal
-    :param api_key: API key for price API service used
+    :param API_KEY: API key for price API service used
     """
     for metal in metals:
         api_url = (f'https://api.metals.dev/v1/metal/spot'

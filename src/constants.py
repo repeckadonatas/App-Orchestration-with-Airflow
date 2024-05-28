@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
+import psycopg
 from dotenv import load_dotenv, find_dotenv
 
 
@@ -20,6 +21,10 @@ LOG_TIME = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 FORMATTER = logging.Formatter(f'{LOG_TIME} :: %(name)s :: %(levelname)s :: %(funcName)s :: %(message)s')
 PATH_TO_LOGS = Path(__file__).cwd()
 LOG_FILE = PATH_TO_LOGS / 'logs/' / ("app_logger_" + datetime.today().strftime("%Y%m%d") + ".log")
+
+
+# DATABASE INITIALIZATION
+INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 
 # FOR PG_DUMP FUNCTION
 # PG_DUMP_PATH = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
@@ -56,7 +61,7 @@ TABLE_MAPPING = {'gold': 'gold_historic',
 TRAINING_DATA_COLUMNS = ['rate_price', 'rate_ask']
 
 
-# REUSABLE REPEATABLE FUNCTIONS
+# REUSABLE FUNCTIONS
 def env_config() -> os.environ:
     """
     Gets database connection credentials from .env file.
@@ -65,6 +70,17 @@ def env_config() -> os.environ:
     load_dotenv(find_dotenv('.env', usecwd=True))
 
     return os.environ
+
+
+# def init_db():
+#     """
+#     Initiate a database upon first connection
+#     if it doesn't exist.
+#     """
+#     with open(INIT_DB, 'r') as db_f:
+#         db_init = db_f.read()
+#         env_config().get('PG_PASSWORD')
+#         psycopg.connect().cursor().execute(db_init)
 
 
 def read_api() -> str:
@@ -89,3 +105,6 @@ def read_metals_list() -> list:
             metal = metal.strip().rstrip(',')
             metals.append(metal)
     return metals
+
+
+# TABLES FOR THE DATABASE

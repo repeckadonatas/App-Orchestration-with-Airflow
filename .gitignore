@@ -11,6 +11,6 @@ src/get_jobs/__pycache__
 
 # OTHER FILES
 logs/
-src/jobs_data/
+src/data/
 src/data_preparation/.ipynb_checkpoints
 src/data_preparation/data_preparation.ipynb

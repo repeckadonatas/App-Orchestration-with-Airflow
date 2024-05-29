@@ -26,23 +26,39 @@ LOG_FILE = PATH_TO_LOGS / 'logs/' / ("app_logger_" + datetime.today().strftime("
 # DATABASE INITIALIZATION
 INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 
+
 # FOR PG_DUMP FUNCTION
 # PG_DUMP_PATH = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
 PG_DUMP_PATH = 'pg_dump'
 
+
+# API URLs
+REMOTIVE_API = ''
+WEWORKREMOTELY_API = ''
+JOBICY_API = "https://jobicy.com/api/v2/remote-jobs?count=1"
+
+API_DICT = {'REMOTIVE': REMOTIVE_API,
+            'WE WORK REMOTELY': WEWORKREMOTELY_API,
+            'JOBICY': JOBICY_API
+            }
+
+
 # PATHS TO DATA AND FILES
-PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'source/data/'
+PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data/'
 PATH_TO_API = Path(__file__).cwd() / 'source/api_key/api_key.txt'
 PATH_TO_METALS_LIST = Path(__file__).cwd() / 'source/metals.txt'
 ML_MODELS_PATH = Path(__file__).cwd() / 'trained_models'
+
 
 # BACKUPS LOCATION
 PATH_TO_BACKUPS = Path(__file__).cwd() / 'backups'
 BACKUP_FOLDERS_TODAY = PATH_TO_BACKUPS / ("backup_" + CURRENT_DATE)
 
+
 # BACKUP FOLDERS FOR DATABASE AND ML MODELS
 DB_BACKUP_FILE = BACKUP_FOLDERS_TODAY / ("db_backup_" + CURRENT_DATE + ".sql")
 ML_MODELS_BACKUP_FOLDER = BACKUP_FOLDERS_TODAY / ('ml_models_backup_' + CURRENT_DATE)
+
 
 # ORGANIZING COMMODITIES AND DATA UPLOAD TO A DB
 COMMODITIES = ["gold", "silver", "platinum", "palladium"]

@@ -16,7 +16,7 @@ from src.constants import *
 api_logger = log.app_logger(__name__)
 
 
-def get_jobs_api_data(api_dict: dict) -> json:
+def get_api_data(api_dict: dict) -> json:
     """
     Get API response data and save it as JSON files.
     The function uses a dictionary to retrieve an API URL.
@@ -44,7 +44,7 @@ def download_api_data():
 
     """
     try:
-        get_jobs_api_data(API_DICT)
+        get_api_data(API_DICT)
     
     except (Exception, RequestException, URLRequired, InvalidURL) as e:
         api_logger.info('An exception occurred: %s', e, exc_info=True)

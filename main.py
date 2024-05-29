@@ -3,7 +3,7 @@ import concurrent.futures
 from queue import Queue
 
 import src.db_functions as db
-import src.get_jobs as jobs
+import src.get_api_data as jobs
 import src.logger as log
 
 main_logger = log.app_logger(__name__)

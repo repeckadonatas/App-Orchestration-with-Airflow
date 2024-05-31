@@ -6,9 +6,11 @@ logic for data download and is used in concurrency.
 """
 
 import json
+from json import JSONDecodeError
 
 import requests
-from requests.exceptions import RequestException, URLRequired, InvalidURL
+from requests.exceptions import RequestException, URLRequired, InvalidURL, HTTPError
+import cloudscraper
 
 import src.logger as log
 from src.constants import *
@@ -16,35 +18,58 @@ from src.constants import *
 api_logger = log.app_logger(__name__)
 
 
-def get_api_data(api_dict: dict) -> json:
+def get_api_data(api_name: str,
+                 api_url: str) -> None:
     """
-    Get API response data and save it as JSON files.
-    The function uses a dictionary to retrieve an API URL.
-    :param api_dict: a dictionary of API URLs
+    Get API response and save it as a JSON file.
+    The function uses a name and URL to retrieve an API response.
+    :param api_name: a name of an API
+    :param api_url: a URL of an API
     """
-    for api_name, api_url in api_dict.items():
-        if not api_url:
-            api_logger.info(f'Missing URL for "{api_name}"!\n')
-        else:
-            headers = {'accept': 'application/json; charset=utf-8'}
-            response = requests.get(api_url, headers=headers)
-            json_response = response.json()
+    try:
+        if api_name == 'HIMALAYAS':
+            scraper = cloudscraper.create_scraper()
 
-            if response.status_code == 200:
+            headers = {'Referer': 'https://himalayas.app/api',
+                       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0'}
+
+            response = scraper.get(api_url, headers=headers)
+
+        else:
+            headers = {'accept': 'application/json'}
+            response = requests.get(api_url, headers=headers)
+
+        response.raise_for_status()
+
+        if (response.status_code != 204
+                and response.headers["content-type"].strip().startswith("application/json")):
+            try:
+                json_response = response.json()
+
                 os.makedirs(PATH_TO_DATA_STORAGE, exist_ok=True)
                 with open(PATH_TO_DATA_STORAGE / (api_name + '_response.json'), 'w', encoding='utf-8') as f:
                     json.dump(json_response, f, ensure_ascii=False, indent=4)
-                    api_logger.info('Downloading API data for "{}..."'.format(api_name))
-            else:
-                api_logger.info(f'An error occurred: {response.status_code} - {response.text}\n')
+                    api_logger.info(f'Downloaded API data for "{api_name}..."\n')
+
+            except JSONDecodeError as e:
+                api_logger.info(f'A JSON decode error occurred for "{api_name}": %s\n', e, exc_info=True)
+    except (RequestException, URLRequired, InvalidURL, HTTPError) as e:
+        api_logger.error(f'An HTTP error occurred for "{api_name}": {e}', exc_info=True)
+
+    except Exception as e:
+        api_logger.error(f'Unexpected error occurred for "{api_name}": %s\n', e, exc_info=True)
 
 
 def download_api_data():
     """
-
+    Uses the values from a supplied dictionary of API URLs.
+    If a URL of an API is unavailable, a message is displayed
+    and the API data is skipped from download.
+    Else, the API response data is saved to a JSON files.
     """
-    try:
-        get_api_data(API_DICT)
-    
-    except (Exception, RequestException, URLRequired, InvalidURL) as e:
-        api_logger.info('An exception occurred: %s', e, exc_info=True)
+    api_values = read_dict(API_DICT)
+    for api_name, api_url in api_values:
+        if not api_url:
+            api_logger.info(f'Missing URL for "{api_name}"!\n')
+        else:
+            get_api_data(api_name, api_url)

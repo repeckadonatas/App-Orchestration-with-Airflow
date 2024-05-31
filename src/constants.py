@@ -33,12 +33,12 @@ PG_DUMP_PATH = 'pg_dump'
 
 
 # API URLs
-REMOTIVE_API = ''
-WEWORKREMOTELY_API = ''
+REMOTIVE_API = "https://remotive.com/api/remote-jobs?limit=1"
+HIMALAYAS_API = "https://himalayas.app/jobs/api?limit=1"
 JOBICY_API = "https://jobicy.com/api/v2/remote-jobs?count=1"
 
 API_DICT = {'REMOTIVE': REMOTIVE_API,
-            'WE WORK REMOTELY': WEWORKREMOTELY_API,
+            'HIMALAYAS': HIMALAYAS_API,
             'JOBICY': JOBICY_API
             }
 
@@ -46,8 +46,6 @@ API_DICT = {'REMOTIVE': REMOTIVE_API,
 # PATHS TO DATA AND FILES
 PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data/'
 PATH_TO_API = Path(__file__).cwd() / 'source/api_key/api_key.txt'
-PATH_TO_METALS_LIST = Path(__file__).cwd() / 'source/metals.txt'
-ML_MODELS_PATH = Path(__file__).cwd() / 'trained_models'
 
 
 # BACKUPS LOCATION
@@ -60,9 +58,7 @@ DB_BACKUP_FILE = BACKUP_FOLDERS_TODAY / ("db_backup_" + CURRENT_DATE + ".sql")
 ML_MODELS_BACKUP_FOLDER = BACKUP_FOLDERS_TODAY / ('ml_models_backup_' + CURRENT_DATE)
 
 
-# ORGANIZING COMMODITIES AND DATA UPLOAD TO A DB
-COMMODITIES = ["gold", "silver", "platinum", "palladium"]
-
+# TABLES FOR DB
 TABLES_TO_CREATE = ['gold_historic',
                     'silver_historic',
                     'platinum_historic',
@@ -109,18 +105,9 @@ def read_api() -> str:
     return api_key
     
     
-def read_metals_list() -> list:
+def read_dict(api_dict: dict) -> list:
     """
-    Reads a list of commodities (precious metals in this case)
-    to get the price information from an API.
-    :return: a list of precious metals
+    Reads a dictionary of API URLs.
+    :return: a list with a name and URL of an API key/value pair.
     """
-    metals = []
-    with open(PATH_TO_METALS_LIST, 'r', encoding='utf-8') as file:
-        for metal in file:
-            metal = metal.strip().rstrip(',')
-            metals.append(metal)
-    return metals
-
-
-# TABLES FOR THE DATABASE
+    return [(api_name, api_url) for api_name, api_url in api_dict.items()]

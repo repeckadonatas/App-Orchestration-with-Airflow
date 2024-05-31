@@ -45,7 +45,6 @@ API_DICT = {'REMOTIVE': REMOTIVE_API,
 
 # PATHS TO DATA AND FILES
 PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data/'
-PATH_TO_API = Path(__file__).cwd() / 'source/api_key/api_key.txt'
 
 
 # BACKUPS LOCATION

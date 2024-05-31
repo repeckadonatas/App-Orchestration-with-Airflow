@@ -8,9 +8,9 @@ logic for data download and is used in concurrency.
 import json
 from json import JSONDecodeError
 
+import cloudscraper
 import requests
 from requests.exceptions import RequestException, URLRequired, InvalidURL, HTTPError
-import cloudscraper
 
 import src.logger as log
 from src.constants import *

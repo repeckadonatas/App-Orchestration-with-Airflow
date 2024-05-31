@@ -22,4 +22,4 @@ try:
     #
     # concurrent.futures.wait(tasks)
 except Exception as e:
-    main_logger.error('Exception occurred while running "main.py": %s', e, exc_info=True)
+    main_logger.error('Exception occurred while running "main.py": %s\n', e, exc_info=True)

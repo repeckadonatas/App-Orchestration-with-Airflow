@@ -1,11 +1,12 @@
 import pandas as pd
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy.engine import URL
-from sqlalchemy import create_engine, Table, Column, String, Float, Integer, TIMESTAMP, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, DisconnectionError
 
 import src.logger as log
 from src.constants import *
+import src.db_functions.db_tables as db_tables
 
 db_logger = log.app_logger(__name__)
 
@@ -38,7 +39,7 @@ class JobsDataDatabase:
                 pass
 
         except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError) as err:
-            db_logger.error("A configuration error has occurred: %s", err)
+            db_logger.error("A configuration error has occurred: %s", err, exc_info=True)
 
     def __enter__(self):
         """
@@ -53,7 +54,7 @@ class JobsDataDatabase:
             db_logger.info("Connected to the database.")
 
         except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError) as err:
-            db_logger.error("The following connection error has occurred: %s", err)
+            db_logger.error("The following connection error has occurred: %s", err, exc_info=True)
             self.conn = None
         return self
 
@@ -73,7 +74,23 @@ class JobsDataDatabase:
                 raise
 
         except (Exception, AttributeError, exc_type, exc_val, exc_tb) as err:
-            db_logger.error("Connection was not closed: %s\n", err)
+            db_logger.error("Connection was not closed: %s\n", err, exc_info=True)
+
+    def create_tables(self) -> None:
+        """
+        Creates tables in a database if they do not exist.
+        Returns a list of tables in a database.
+        """
+        try:
+            for __tablename__ in db_tables.Base.metadata.tables.keys():
+                if not self.engine.dialect.has_table(self.conn, __tablename__):
+                    db_tables.Base.metadata.create_all(self.engine, checkfirst=True)
+                    db_logger.info(f'Table "{__tablename__}" created successfully!\n')
+                else:
+                    db_logger.info(f'Table "{__tablename__}" already exists. Skipping creation.\n')
+        except (Exception, OperationalError) as e:
+            db_logger.error(f'An error occurred while creating "{__tablename__}" table: {e}\n', exc_info=True)
+            self.conn.rollback()
 
 
 #
@@ -123,8 +140,7 @@ def jobs_data_upload_to_db() -> None:
     """
     with JobsDataDatabase() as db:
         try:
-            db_logger.info('Hello')
-            # db.create_tables()
+            db.create_tables()
             # db_tables = db.get_tables_in_db()
             # print()
             # while not event.is_set() or not queue.empty():

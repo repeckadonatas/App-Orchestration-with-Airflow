@@ -29,7 +29,6 @@ def get_api_data(api_name: str,
     try:
         if api_name == 'HIMALAYAS':
             scraper = cloudscraper.create_scraper()
-
             headers = {'Referer': 'https://himalayas.app/api',
                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0'}
 
@@ -47,12 +46,14 @@ def get_api_data(api_name: str,
                 json_response = response.json()
 
                 os.makedirs(PATH_TO_DATA_STORAGE, exist_ok=True)
+
                 with open(PATH_TO_DATA_STORAGE / (api_name + '_response.json'), 'w', encoding='utf-8') as f:
                     json.dump(json_response, f, ensure_ascii=False, indent=4)
-                    api_logger.info(f'Downloaded API data for "{api_name}..."\n')
+                    api_logger.info(f'Downloaded API data from "{api_name}..."\n')
 
             except JSONDecodeError as e:
                 api_logger.info(f'A JSON decode error occurred for "{api_name}": %s\n', e, exc_info=True)
+
     except (RequestException, URLRequired, InvalidURL, HTTPError) as e:
         api_logger.error(f'An HTTP error occurred for "{api_name}": {e}', exc_info=True)
 
@@ -65,7 +66,7 @@ def download_api_data():
     Uses the values from a supplied dictionary of API URLs.
     If a URL of an API is unavailable, a message is displayed
     and the API data is skipped from download.
-    Else, the API response data is saved to a JSON files.
+    Else, the API response data is saved to JSON files.
     """
     api_values = read_dict(API_DICT)
     for api_name, api_url in api_values:

@@ -13,7 +13,7 @@ queue = Queue(maxsize=4)
 try:
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         db_con = db.jobs_data_upload_to_db()
-        # api = jobs.download_api_data()
+        api = jobs.download_api_data()
         # tasks = [executor.submit(metals.download_metals_data()),
         #          executor.submit(data.prepare_json_data(queue, event)),
         #          executor.submit(db.metals_price_data_upload_to_db(queue, event))]

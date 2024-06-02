@@ -14,10 +14,10 @@ The program uses Threading as a concurrency method. Threading is suitable when l
 
 * Programing language - **Python**;
 * Data storage and querying - **PostgreSQL**;
-* For testing data preparation functions - **Jupyter Notebook**;
 * Data cleaning and normalization - **Pandas**;
 * Package and dependency management - **Poetry**;
-* Containerization and Image storage - **Docker**, **DockerHub**.
+* Containerization and Image storage - **Docker**, **DockerHub**;
+* Orchestration - **Airflow**
 
 
 ## Project Deliveries Plan(FIX!!!!)

@@ -79,7 +79,6 @@ class JobsDataDatabase:
     def create_tables(self) -> None:
         """
         Creates tables in a database if they do not exist.
-        Returns a list of tables in a database.
         """
         try:
             for __tablename__ in db_tables.Base.metadata.tables.keys():

@@ -2,7 +2,6 @@ from sqlalchemy import Table, Column, String, Float, Integer, TIMESTAMP, MetaDat
 from sqlalchemy.ext.declarative import declarative_base
 
 import src.logger as log
-from src.constants import *
 
 tables_logger = log.app_logger(__name__)
 

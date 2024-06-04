@@ -7,7 +7,6 @@ import logging
 from pathlib import Path
 from datetime import datetime
 
-import psycopg
 from dotenv import load_dotenv, find_dotenv
 
 
@@ -44,7 +43,7 @@ API_DICT = {'REMOTIVE': REMOTIVE_API,
 
 
 # PATHS TO DATA AND FILES
-PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data/'
+PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data'
 
 
 # BACKUPS LOCATION
@@ -58,29 +57,55 @@ ML_MODELS_BACKUP_FOLDER = BACKUP_FOLDERS_TODAY / ('ml_models_backup_' + CURRENT_
 
 
 # TABLES FOR DB
-TABLES_TO_CREATE = ['gold_historic',
-                    'silver_historic',
-                    'platinum_historic',
-                    'palladium_historic',
-                    'commodities_price_data_analytics']
+# TABLES_TO_CREATE = ['gold_historic',
+#                     'silver_historic',
+#                     'platinum_historic',
+#                     'palladium_historic',
+#                     'commodities_price_data_analytics']
 
-TABLE_MAPPING = {'gold': 'gold_historic',
-                 'silver': 'silver_historic',
-                 'platinum': 'platinum_historic',
-                 'palladium': 'palladium_historic'}
-
-TRAINING_DATA_COLUMNS = ['rate_price', 'rate_ask']
+# TABLE_MAPPING = {'gold': 'gold_historic',
+#                  'silver': 'silver_historic',
+#                  'platinum': 'platinum_historic',
+#                  'palladium': 'palladium_historic'}
+#
+# TRAINING_DATA_COLUMNS = ['rate_price', 'rate_ask']
 
 
 # REUSABLE FUNCTIONS
 def env_config() -> os.environ:
     """
     Gets database connection credentials from .env file.
-    :return: os.environ
+    :return: os.environ.
     """
     load_dotenv(find_dotenv('.env', usecwd=True))
 
     return os.environ
+
+
+def read_dict(dict_name: dict) -> list:
+    """
+    Reads a dictionary to get the keys and values.
+    :param dict_name: the name of a dictionary to read.
+    :return: a list of key/value pairs.
+    """
+    return [(dict_key, dict_value) for dict_key, dict_value in dict_name.items()]
+
+
+def get_files_in_directory(dir_path: str) -> list:
+    """
+    Reads files in a set directory.
+    Returns a list of names of files in the directory
+    to be iterated through.
+    :param dir_path: path to a directory to read.
+    :return: a list of file names in the directory.
+    """
+    files = os.scandir(dir_path)
+
+    list_of_files = []
+    for file in files:
+        if file.is_dir() or file.is_file():
+            list_of_files.append(file.name)
+    return list_of_files
 
 
 # def init_db():
@@ -92,21 +117,3 @@ def env_config() -> os.environ:
 #         db_init = db_f.read()
 #         env_config().get('PG_PASSWORD')
 #         psycopg.connect().cursor().execute(db_init)
-
-
-def read_api() -> str:
-    """
-    Reads API key value from a specified .txt file.
-    :return: API key value as a string
-    """
-    with open(PATH_TO_API, 'r', encoding='utf-8') as key:
-        api_key = key.readline()
-    return api_key
-    
-    
-def read_dict(api_dict: dict) -> list:
-    """
-    Reads a dictionary of API URLs.
-    :return: a list with a name and URL of an API key/value pair.
-    """
-    return [(api_name, api_url) for api_name, api_url in api_dict.items()]

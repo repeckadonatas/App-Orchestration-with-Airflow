@@ -22,6 +22,9 @@ class JobsDataDatabase:
         """
         Retrieves parsed config parameters from .env file.
         Creates database URL using parsed configuration variables.
+        Creates a database instance using connection parameters
+        if the database does not exist.
+        Creates a connection engine.
         """
         try:
             self.params = env_config()
@@ -34,21 +37,22 @@ class JobsDataDatabase:
 
             if not database_exists(self.db_url):
                 create_database(self.db_url)
-                db_logger.info(f'Database created. Database URL: {self.db_url}')
+                db_logger.info('Database created. Database URL: %s', self.db_url)
             else:
                 pass
+
+            self.engine = create_engine(self.db_url, pool_pre_ping=True)
 
         except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError) as err:
             db_logger.error("A configuration error has occurred: %s", err, exc_info=True)
 
     def __enter__(self):
         """
-        Creates a connection to the database when main.py is run.
-        Creates a connection engine and sets autocommit flag to True.
+        Creates a connection to the database when main.py is run
+        and sets autocommit flag to True.
         :return: connection to a database
         """
         try:
-            self.engine = create_engine(self.db_url, pool_pre_ping=True)
             self.conn = self.engine.connect().execution_options(autocommit=True)
 
             db_logger.info("Connected to the database.")
@@ -73,7 +77,7 @@ class JobsDataDatabase:
             elif exc_val:
                 raise
 
-        except (Exception, AttributeError, exc_type, exc_val, exc_tb) as err:
+        except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError, exc_type, exc_val, exc_tb) as err:
             db_logger.error("Connection was not closed: %s\n", err, exc_info=True)
 
     def create_tables(self) -> None:
@@ -84,11 +88,11 @@ class JobsDataDatabase:
             for __tablename__ in db_tables.Base.metadata.tables.keys():
                 if not self.engine.dialect.has_table(self.conn, __tablename__):
                     db_tables.Base.metadata.create_all(self.engine, checkfirst=True)
-                    db_logger.info(f'Table "{__tablename__}" created successfully!\n')
+                    db_logger.info('Table "%s" created successfully!\n', __tablename__)
                 else:
-                    db_logger.info(f'Table "{__tablename__}" already exists. Skipping creation.\n')
-        except (Exception, OperationalError) as e:
-            db_logger.error(f'An error occurred while creating "{__tablename__}" table: {e}\n', exc_info=True)
+                    db_logger.info('Table "%s" already exists. Skipping creation.\n', __tablename__)
+        except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError) as e:
+            db_logger.error('An error occurred while creating "%s" table: %s\n', __tablename__, e, exc_info=True)
             self.conn.rollback()
 
 
@@ -158,4 +162,4 @@ def jobs_data_upload_to_db() -> None:
             #
             #     queue.task_done()
         except Exception as e:
-            db_logger.error("An error occurred while loading the data: {}.".format(e), exc_info=True)
+            db_logger.error("An error occurred while loading the data: %s.", e, exc_info=True)

@@ -12,6 +12,7 @@ from dotenv import load_dotenv, find_dotenv
 # DATE
 CURRENT_DATE = datetime.today().strftime("%Y%m%d_%H%m")
 
+
 # FOR LOGGER ONLY
 LOG_TIME = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -19,12 +20,15 @@ FORMATTER = logging.Formatter(f'{LOG_TIME} :: %(name)s :: %(levelname)s :: %(fun
 PATH_TO_LOGS = Path(__file__).cwd()
 LOG_FILE = PATH_TO_LOGS / 'logs/' / ("app_logger_" + datetime.today().strftime("%Y%m%d") + ".log")
 
+
 # DATABASE INITIALIZATION
 INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
+
 
 # FOR PG_DUMP FUNCTION
 # PG_DUMP_PATH = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
 PG_DUMP_PATH = 'pg_dump'
+
 
 # API URLs
 REMOTIVE_API = "https://remotive.com/api/remote-jobs?limit=1"
@@ -36,21 +40,25 @@ API_DICT = {'REMOTIVE': REMOTIVE_API,
             'JOBICY': JOBICY_API
             }
 
+
 # PATHS TO DATA AND FILES
 PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data'
+
 
 # BACKUPS LOCATION
 PATH_TO_BACKUPS = Path(__file__).cwd() / 'backups'
 BACKUP_FOLDERS_TODAY = PATH_TO_BACKUPS / ("backup_" + CURRENT_DATE)
 
+
 # BACKUP FOLDERS FOR DATABASE AND ML MODELS
 DB_BACKUP_FILE = BACKUP_FOLDERS_TODAY / ("db_backup_" + CURRENT_DATE + ".sql")
+
 
 # FOR DATAFRAME
 COLUMN_RENAME_MAPPING = {"title": "job_title",
                          "companyName": "company_name",
                          "applicationLink": "job_ad_link",
-                         "locationRestrictions": "region",
+                         "locationRestrictions_0": "region",
                          "minSalary": "minimum_salary",
                          "maxSalary": "maximum_salary",
                          "pubDate": "pub_date_timestamp",
@@ -66,7 +74,6 @@ COLUMN_RENAME_MAPPING = {"title": "job_title",
                          "candidate_required_location": "region",
                          "publication_date": "pub_date_timestamp"}
 
-# TABLES FOR DB
 COMMON_SCHEMA = ['job_title',
                  'company_name',
                  'job_ad_link',
@@ -75,6 +82,8 @@ COMMON_SCHEMA = ['job_title',
                  'salary',
                  'timestamp']
 
+
+# TABLES FOR DB
 TABLES_TO_CREATE = ['remotive_data',
                     'himalayas_data',
                     'jobicy_data']

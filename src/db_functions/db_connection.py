@@ -108,27 +108,32 @@ class JobsDataDatabase:
 #         db_logger.info('Table(s) found in a database: {}'.format(table_list))
 #
 #         return table_list
-#
-#     def determine_table_name(self, file_name: str) -> (str | None):
-#         """
-#         To determine the table name based on the file name.
-#         """
-#         for prefix, table in TABLE_MAPPING.items():
-#             if prefix in file_name:
-#                 return table
-#         return db_logger.error('Table "{}" not found in the database'.format(table))
-#
-#     def load_to_database(self, dataframe: pd.DataFrame, table_name: str) -> None:
-#         """
-#         Function to load the data of a dataframe to a specified table in the database.
-#         :param dataframe: dataframe to load data from.
-#         :param table_name: table to load the data to.
-#         """
-#         try:
-#             dataframe.to_sql(table_name, con=self.engine, if_exists='append', index=None, dtype={'timestamp': TIMESTAMP()})
-#         except Exception as e:
-#             db_logger.error("An error occurred while loading the data: {}. Rolling back the last transaction".format(e))
-#             self.conn.rollback()
+
+    def determine_table_name(self, file_name: str) -> (str | None):
+        """
+        To determine the table name based on the prefix of a file name.
+        The function is used make sure that the data of a dataframe
+        is loaded into a correct table in the database.
+        Mapping logic is determined by TABLE_MAPPING dictionary.
+        :param file_name: file name to determine the table name.
+        """
+        for prefix, table in TABLE_MAPPING.items():
+            if prefix in file_name:
+                return table
+        # return db_logger.error('Table "{}" not found in the database'.format(table))
+
+    def load_to_database(self, dataframe: pd.DataFrame, table_name: str) -> None:
+        """
+        Function to load the data of a dataframe to a specified table in the database.
+        :param dataframe: dataframe to load data from.
+        :param table_name: table to load the data to.
+        """
+        try:
+            dataframe.to_sql(table_name, con=self.engine, if_exists='append', index=None)
+        except Exception as e:
+            db_logger.error("An error occurred while loading the data: %s. "
+                            "Rolling back the last transaction", e, exc_info=True)
+            self.conn.rollback()
 #
 #
 # def jobs_data_upload_to_db(queue: str, event: str) -> None:

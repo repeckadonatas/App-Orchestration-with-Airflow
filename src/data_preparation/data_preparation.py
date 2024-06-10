@@ -5,8 +5,8 @@ to the database.
 """
 
 import json
+import pytz
 import pandas as pd
-from pandas.core import series
 
 import src.logger as log
 from src.constants import *
@@ -21,7 +21,7 @@ def create_dataframe(file_json: str) -> pd.DataFrame:
     """
     with open(PATH_TO_DATA_STORAGE / file_json, 'r', encoding='utf-8') as json_file:
         json_data = json.load(json_file)
-        df = pd.DataFrame(pd.json_normalize(json_data))
+        df = pd.json_normalize(json_data, sep='_')
     return df
 
 
@@ -34,63 +34,79 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
     for column in dataframe.columns:
         if isinstance(dataframe[column], (dict, pd.core.series.Series)):
             dataframe_flat = dataframe[column].apply(pd.Series)
-            dataframe_flat = dataframe_flat[0].apply(pd.Series)
-
-            for col in dataframe_flat.columns:
-                if isinstance(dataframe_flat[col][0], list):
-                    list_df = dataframe_flat[col].apply(lambda x: pd.Series(x))
-                    list_df = list_df.add_prefix(f"{col}_")
-                    dataframe_flat = dataframe_flat.drop(col, axis=1).join(list_df)
-                    dataframe_flat.fillna('')
-
+            dataframe_flat_0 = dataframe_flat[0].apply(pd.Series)
+            dataframe_new = pd.concat([dataframe, dataframe_flat_0], axis=1)
+            dataframe_new = dataframe_new.drop(columns=[column], axis=1)
+            
+            for col in dataframe_new.columns:
+                if isinstance(dataframe_new[col][0], list):
+                    df_lists = pd.DataFrame(dataframe_new[col].to_list(), index=dataframe_new.index)
+                    df_lists.columns = [f'{col}_{i}' for i in range(df_lists.shape[1])]
+                    dataframe_new = pd.concat([dataframe_new, df_lists], axis=1)
+                    dataframe_new = dataframe_new.drop(columns=[col], axis=1)
+                    dataframe_new.fillna(pd.isnull)
                 else:
-                    continue
-
+                    pass
         else:
-            dataframe_flat = dataframe[column].apply(pd.Series)
-            dataframe_flat = dataframe_flat[0].apply(pd.Series)
+            pass
+            
+    return dataframe_new
 
-    return dataframe_flat
+
+def add_timestamp(dataframe: pd.DataFrame) -> pd.DataFrame:
+    """
+    Adding a timestamp column to the dataframe.
+    This column represents the time when the JSON data was uploaded to the database.
+    :param dataframe: a dataframe to add timestamp column to.
+    :return: a dataframe with a timestamp column.
+    """
+    local_timezone = pytz.timezone('Europe/Vilnius')
+    dataframe['timestamp'] = datetime.now(tz=local_timezone)
+    
+    return dataframe
 
 
 def rename_columns(dataframe: pd.DataFrame,
-                   column_rename_mapping: dict) -> pd.DataFrame:
+                   column_rename_map: dict) -> pd.DataFrame:
     """
     Changes the column names of the dataframe to their new column names.
-    :param dataframe: a pandas dataframe to change column names for
+    :param dataframe: a pandas dataframe to change column names for.
+    :param column_rename_map: a dictionary containing new column names.
     :return: dataframe with new column names
-    """    
-    dataframe.rename(columns=column_rename_mapping, inplace=True)
-    dataframe.reindex(columns=column_rename_mapping)
+    """
+    dataframe.rename(columns=column_rename_map, inplace=True)
+    
     return dataframe
 
 
-def reorder_dataframe_columns(dataframe: pd.DataFrame) -> pd.DataFrame:
+def reorder_dataframe_columns(dataframe: pd.DataFrame,
+                              reorder_schema: list) -> pd.DataFrame:
     """
     Reorders the columns of a dataframe to match a common schema.
-    :param dataframe: dataframe to reorder columns for
+    :param dataframe: dataframe to reorder columns for.
+    :param reorder_schema: a list containing the column order
     :return: dataframe with reordered columns
     """
-    dataframe = dataframe.reindex(columns=COMMON_SCHEMA)
+    dataframe = dataframe.reindex(columns=reorder_schema, fill_value=None)
+    
     return dataframe
 
 
-# def change_column_names(dataframe: pd.DataFrame) -> pd.DataFrame:
-#     """
-#     Changes the column names of the dataframe to their new column names.
-#     :param dataframe: a pandas dataframe to change column names
-#     :return: dataframe with new column names
-#     """
-#     new_names = {"rate.price": "rate_price",
-#                  "rate.ask": "rate_ask",
-#                  "rate.bid": "rate_bid", 
-#                  "rate.high": "rate_high",
-#                  "rate.low": "rate_low",
-#                  "rate.change": "rate_change",
-#                  "rate.change_percent": "rate_change_percent"}
-#     dataframe.rename(columns=new_names, inplace=True)
-#     dataframe.reindex(columns=new_names)
-#     return dataframe
+def change_datetime_format(dataframe: pd.DataFrame,
+                           datetime_columns_list: list) -> pd.DataFrame:
+    """
+    Changes datetime format for datetime columns of a given dataframe to ISO 8601 format.
+    :param dataframe: dataframe to change datetime format for.
+    :param datetime_columns_list: a list of columns for which the datetime format needs to be changed.
+    :return: dataframe with changed datetime format.
+    """
+    for column in datetime_columns_list:
+        if column in dataframe.columns:
+            dataframe[column] = pd.to_datetime(dataframe[column], unit='s', errors='coerce')
+        else:
+            pass
+
+    return dataframe
 
 
 def prepare_json_data(queue: str, event: str) -> None:
@@ -103,17 +119,22 @@ def prepare_json_data(queue: str, event: str) -> None:
     while not event.is_set():
         try:
             json_files = get_files_in_directory(PATH_TO_DATA_STORAGE)
-            data_logger.info(f'Files found in a directory: {json_files}')
+            data_logger.info('Files found in a directory: %s', json_files)
             
             for json_file in json_files:
                 json_to_df = create_dataframe(json_file)
-                # new_col_names = change_column_names(json_to_df)
-                data_logger.info(f'A dataframe was created for a file: {json_file}')
+                json_flat = flatten_json_file(json_to_df)
+                json_time = add_timestamp(json_flat)
+                json_names = rename_columns(json_time, COLUMN_RENAME_MAP)
+                json_reorder = reorder_dataframe_columns(json_names, COMMON_SCHEMA)
+                json_time_format = change_datetime_format(json_reorder, DATETIME_COLUMNS)
 
-                queue.put([new_col_names, json_file])
+                data_logger.info('A dataframe was created for a file: %s', json_file)
+
+                queue.put([json_time_format, json_file])
 
             event.set()
             print()
         except Exception as e:
-            data_logger.error(f"An error occurred while creating a dataframe:\n {e}\n")
+            data_logger.error("An error occurred while creating a dataframe:\n %s\n", e, exc_info=True)
         

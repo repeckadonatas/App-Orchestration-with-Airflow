@@ -7,6 +7,7 @@ src/__pycache__
 src/db_functions/__pycache__
 src/logger/__pycache__
 src/get_api_data/__pycache__
+src/data_preparation/__pycache__
 
 
 # OTHER FILES

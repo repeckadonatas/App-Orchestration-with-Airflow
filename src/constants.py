@@ -55,32 +55,42 @@ DB_BACKUP_FILE = BACKUP_FOLDERS_TODAY / ("db_backup_" + CURRENT_DATE + ".sql")
 
 
 # FOR DATAFRAME
-COLUMN_RENAME_MAPPING = {"title": "job_title",
-                         "companyName": "company_name",
-                         "applicationLink": "job_ad_link",
-                         "locationRestrictions_0": "region",
-                         "minSalary": "minimum_salary",
-                         "maxSalary": "maximum_salary",
-                         "pubDate": "pub_date_timestamp",
-                         "expiryDate": "expiry_date_timestamp",
-
-                         "jobTitle": "job_title",
-                         "url": "job_ad_link",
-                         "jobType": "job_type",
-                         "jobGeo": "region",
-                         "annualSalaryMin": "minimum_salary",
-                         "annualSalaryMax": "maximum_salary",
-
-                         "candidate_required_location": "region",
-                         "publication_date": "pub_date_timestamp"}
+COLUMN_RENAME_MAP = {"title": "job_title",
+                     "jobTitle": "job_title",
+                     "seniority_0": "seniority",
+                     "jobLevel": "seniority",
+                     "companyName": "company_name",
+                     "applicationLink": "job_ad_link",
+                     "url": "job_ad_link",
+                     "minSalary": "min_salary",
+                     "annualSalaryMin": "min_salary",
+                     "maxSalary": "max_salary",
+                     "annualSalaryMax": "max_salary",
+                     "salaryCurrency": "salary_currency",
+                     "pubDate": "pub_date_timestamp",
+                     "publication_date": "pub_date_timestamp",
+                     "expiryDate": "expiry_date_timestamp",
+                     "locationRestrictions_0": "region",
+                     "jobGeo": "region",
+                     "candidate_required_location": "region",
+                     "jobType": "job_type"
+                     }
 
 COMMON_SCHEMA = ['job_title',
+                 'seniority',
                  'company_name',
-                 'job_ad_link',
                  'job_type',
                  'region',
                  'salary',
-                 'timestamp']
+                 'min_salary',
+                 'max_salary',
+                 'salary_currency',
+                 'pub_date_timestamp',
+                 'expiry_date_timestamp',
+                 'timestamp',
+                 'job_ad_link']
+
+DATETIME_COLUMNS = ['pub_date_timestamp', 'expiry_date_timestamp']
 
 
 # TABLES FOR DB
@@ -127,7 +137,9 @@ def get_files_in_directory(dir_path: str) -> list:
     for file in files:
         if file.is_dir() or file.is_file():
             list_of_files.append(file.name)
+
     return list_of_files
+
 
 # def init_db():
 #     """

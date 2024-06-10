@@ -1,8 +1,8 @@
 import pandas as pd
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy.engine import URL
-from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, DisconnectionError
+from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, DisconnectionError, ProgrammingError
 
 import src.logger as log
 from src.constants import *
@@ -85,6 +85,8 @@ class JobsDataDatabase:
         Creates tables in a database if they do not exist.
         """
         try:
+            self.metadata = MetaData()
+
             for __tablename__ in db_tables.Base.metadata.tables.keys():
                 if not self.engine.dialect.has_table(self.conn, __tablename__):
                     db_tables.Base.metadata.create_all(self.engine, checkfirst=True)
@@ -96,18 +98,17 @@ class JobsDataDatabase:
             self.conn.rollback()
 
 
-#
-#     def get_tables_in_db(self) -> list:
-#         """
-#         Returns a list of all the tables in the database.
-#         """
-#         table_list = []
-#         for table, self.metadata in self.metadata.tables.items():
-#             if self.engine.dialect.has_table(self.conn, table):
-#                 table_list.append(table)
-#         db_logger.info('Table(s) found in a database: {}'.format(table_list))
-#
-#         return table_list
+
+    def get_tables_in_db(self) -> list:
+        """
+        Returns a list of all the tables in the database.
+        """
+        table_list = []
+        for table, metadata in self.metadata.tables.items():
+            if self.engine.dialect.has_table(self.conn, table):
+                table_list.append(table)
+
+        return table_list
 
     def determine_table_name(self, file_name: str) -> (str | None):
         """
@@ -136,8 +137,8 @@ class JobsDataDatabase:
             self.conn.rollback()
 #
 #
-# def jobs_data_upload_to_db(queue: str, event: str) -> None:
-def jobs_data_upload_to_db() -> None:
+def jobs_data_upload_to_db(queue: str, event: str) -> None:
+# def json_data_upload_to_db() -> None:
     """
     Setting up the sequence in which
     to execute data upload to database.
@@ -149,13 +150,14 @@ def jobs_data_upload_to_db() -> None:
     with JobsDataDatabase() as db:
         try:
             db.create_tables()
-            # db_tables = db.get_tables_in_db()
+            tables_in_db = db.get_tables_in_db()
+            db_logger.info('Table(s) found in a database: %s', tables_in_db)
             # print()
-            # while not event.is_set() or not queue.empty():
-            #     dataframe, file_name = queue.get()
+            while not event.is_set() or not queue.empty():
+                dataframe, file_name = queue.get()
             #
-            #     db.load_to_database(dataframe=dataframe, table_name='commodities_price_data_analytics')
-            #     db_logger.info('Dataframe "{}" loaded to a table "commodities_price_data_analytics"'.format(file_name))
+                db.load_to_database(dataframe=dataframe, table_name='jobs_test')
+                db_logger.info('Dataframe "%s" loaded to a table "jobs_test"', file_name)
             #
             #     table = db.determine_table_name(file_name)
             #
@@ -166,5 +168,6 @@ def jobs_data_upload_to_db() -> None:
             #         db_logger.error('Table "{}" not found in the database'.format(table))
             #
             #     queue.task_done()
-        except Exception as e:
+        except (ProgrammingError, OperationalError, DatabaseError,
+                DisconnectionError, DBAPIError, AttributeError) as e:
             db_logger.error("An error occurred while loading the data: %s.", e, exc_info=True)

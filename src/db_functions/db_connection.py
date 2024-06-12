@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy_utils import create_database, database_exists
 from sqlalchemy.engine import URL
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, DisconnectionError, ProgrammingError
 
 import src.logger as log
@@ -77,7 +77,8 @@ class JobsDataDatabase:
             elif exc_val:
                 raise
 
-        except (OperationalError, DatabaseError, DisconnectionError, DBAPIError, AttributeError, exc_type, exc_val, exc_tb) as err:
+        except (OperationalError, DatabaseError, DisconnectionError, DBAPIError,
+                AttributeError, exc_type, exc_val, exc_tb) as err:
             db_logger.error("Connection was not closed: %s\n", err, exc_info=True)
 
     def create_tables(self) -> None:
@@ -85,8 +86,6 @@ class JobsDataDatabase:
         Creates tables in a database if they do not exist.
         """
         try:
-            self.metadata = MetaData()
-
             for __tablename__ in db_tables.Base.metadata.tables.keys():
                 if not self.engine.dialect.has_table(self.conn, __tablename__):
                     db_tables.Base.metadata.create_all(self.engine, checkfirst=True)
@@ -97,31 +96,29 @@ class JobsDataDatabase:
             db_logger.error('An error occurred while creating "%s" table: %s\n', __tablename__, e, exc_info=True)
             self.conn.rollback()
 
-
-
     def get_tables_in_db(self) -> list:
         """
         Returns a list of all the tables in the database.
         """
-        table_list = []
-        for table, metadata in self.metadata.tables.items():
-            if self.engine.dialect.has_table(self.conn, table):
-                table_list.append(table)
+        inspect_db = inspect(self.engine)
+        tables_list = inspect_db.get_table_names()
 
-        return table_list
+        return tables_list
 
-    def determine_table_name(self, file_name: str) -> (str | None):
+    def determine_table_name(self, file_name: str,
+                             table_mapping: dict) -> (str | None):
         """
-        To determine the table name based on the prefix of a file name.
-        The function is used make sure that the data of a dataframe
+        To map the correct dataframe with the table to load the data to.
+        The function is used to make sure that the data of a dataframe
         is loaded into a correct table in the database.
-        Mapping logic is determined by TABLE_MAPPING dictionary.
+        Mapping logic is determined by a supplied table mapping dictionary.
         :param file_name: file name to determine the table name.
+        :param table_mapping: a dictionary with dataframe names and matching table names.
         """
-        for prefix, table in TABLE_MAPPING.items():
-            if prefix in file_name:
+        file_name_lower = file_name.lower()
+        for prefix, table in table_mapping.items():
+            if file_name_lower.startswith(prefix.lower()):
                 return table
-        # return db_logger.error('Table "{}" not found in the database'.format(table))
 
     def load_to_database(self, dataframe: pd.DataFrame, table_name: str) -> None:
         """
@@ -135,10 +132,9 @@ class JobsDataDatabase:
             db_logger.error("An error occurred while loading the data: %s. "
                             "Rolling back the last transaction", e, exc_info=True)
             self.conn.rollback()
-#
-#
+
+
 def jobs_data_upload_to_db(queue: str, event: str) -> None:
-# def json_data_upload_to_db() -> None:
     """
     Setting up the sequence in which
     to execute data upload to database.
@@ -151,23 +147,23 @@ def jobs_data_upload_to_db(queue: str, event: str) -> None:
         try:
             db.create_tables()
             tables_in_db = db.get_tables_in_db()
-            db_logger.info('Table(s) found in a database: %s', tables_in_db)
-            # print()
+            db_logger.info('Table(s) found in a database: %s\n', tables_in_db)
+
             while not event.is_set() or not queue.empty():
                 dataframe, file_name = queue.get()
+
+                db.load_to_database(dataframe=dataframe, table_name='jobs_listings_data')
+                db_logger.info('Dataframe "%s" loaded to a table "jobs_listings_data"', file_name)
+
+                # table = db.determine_table_name(file_name, TABLE_MAPPING)
+                #
+                # if table in tables_in_db:
+                #     db.load_to_database(dataframe=dataframe, table_name=table)
+                #     db_logger.info('Dataframe "{}" loaded to a table "{}"'.format(file_name, table))
+                # else:
+                #     db_logger.error('Table "{}" not found in the database'.format(table))
             #
-                db.load_to_database(dataframe=dataframe, table_name='jobs_test')
-                db_logger.info('Dataframe "%s" loaded to a table "jobs_test"', file_name)
-            #
-            #     table = db.determine_table_name(file_name)
-            #
-            #     if table in db_tables:
-            #         db.load_to_database(dataframe=dataframe, table_name=table)
-            #         db_logger.info('Dataframe "{}" loaded to a table "{}"'.format(file_name, table))
-            #     else:
-            #         db_logger.error('Table "{}" not found in the database'.format(table))
-            #
-            #     queue.task_done()
+                queue.task_done()
         except (ProgrammingError, OperationalError, DatabaseError,
                 DisconnectionError, DBAPIError, AttributeError) as e:
             db_logger.error("An error occurred while loading the data: %s.", e, exc_info=True)

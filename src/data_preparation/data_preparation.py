@@ -109,6 +109,16 @@ def change_datetime_format(dataframe: pd.DataFrame,
     return dataframe
 
 
+def common_dataframe_schema(dataframe: pd.DataFrame,
+                            dataframe_schema_definition: dict) -> pd.DataFrame:
+    """
+
+    """
+    for column, dtype in dataframe_schema_definition.items():
+        dataframe[column] = dataframe[column].astype(dtype)
+    return dataframe
+
+
 def prepare_json_data(queue: str, event: str) -> None:
     """
     Setting up the sequence in which
@@ -126,12 +136,13 @@ def prepare_json_data(queue: str, event: str) -> None:
                 json_flat = flatten_json_file(json_to_df)
                 json_time = add_timestamp(json_flat)
                 json_names = rename_columns(json_time, COLUMN_RENAME_MAP)
-                json_reorder = reorder_dataframe_columns(json_names, COMMON_SCHEMA)
+                json_reorder = reorder_dataframe_columns(json_names, COMMON_TABLE_SCHEMA)
                 json_time_format = change_datetime_format(json_reorder, DATETIME_COLUMNS)
+                json_dtypes = common_dataframe_schema(json_time_format, DATA_TYPES_SCHEMA)
 
                 data_logger.info('A dataframe was created for a file: %s', json_file)
 
-                queue.put([json_time_format, json_file])
+                queue.put([json_dtypes, json_file])
 
             event.set()
             print()

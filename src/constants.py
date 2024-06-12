@@ -55,40 +55,59 @@ DB_BACKUP_FILE = BACKUP_FOLDERS_TODAY / ("db_backup_" + CURRENT_DATE + ".sql")
 
 
 # FOR DATAFRAME
-COLUMN_RENAME_MAP = {"title": "job_title",
-                     "jobTitle": "job_title",
-                     "seniority_0": "seniority",
-                     "jobLevel": "seniority",
-                     "companyName": "company_name",
-                     "applicationLink": "job_ad_link",
-                     "url": "job_ad_link",
-                     "minSalary": "min_salary",
-                     "annualSalaryMin": "min_salary",
-                     "maxSalary": "max_salary",
-                     "annualSalaryMax": "max_salary",
-                     "salaryCurrency": "salary_currency",
-                     "pubDate": "pub_date_timestamp",
-                     "publication_date": "pub_date_timestamp",
-                     "expiryDate": "expiry_date_timestamp",
-                     "locationRestrictions_0": "region",
-                     "jobGeo": "region",
-                     "candidate_required_location": "region",
-                     "jobType": "job_type"
-                     }
+COLUMN_RENAME_MAP = {
+    "title": "job_title",
+    "jobTitle": "job_title",
+    "seniority_0": "seniority",
+    "jobLevel": "seniority",
+    "companyName": "company_name",
+    "applicationLink": "job_ad_link",
+    "url": "job_ad_link",
+    "minSalary": "min_salary",
+    "annualSalaryMin": "min_salary",
+    "maxSalary": "max_salary",
+    "annualSalaryMax": "max_salary",
+    "salaryCurrency": "salary_currency",
+    "pubDate": "pub_date_timestamp",
+    "publication_date": "pub_date_timestamp",
+    "expiryDate": "expiry_date_timestamp",
+    "locationRestrictions_0": "region",
+    "jobGeo": "region",
+    "candidate_required_location": "region",
+    "jobType": "job_type"
+    }
 
-COMMON_SCHEMA = ['job_title',
-                 'seniority',
-                 'company_name',
-                 'job_type',
-                 'region',
-                 'salary',
-                 'min_salary',
-                 'max_salary',
-                 'salary_currency',
-                 'pub_date_timestamp',
-                 'expiry_date_timestamp',
-                 'timestamp',
-                 'job_ad_link']
+COMMON_TABLE_SCHEMA = [
+    'job_title',
+    'seniority',
+    'company_name',
+    'job_type',
+    'region',
+    'salary',
+    'min_salary',
+    'max_salary',
+    'salary_currency',
+    'pub_date_timestamp',
+    'expiry_date_timestamp',
+    'timestamp',
+    'job_ad_link'
+]
+
+DATA_TYPES_SCHEMA = {
+    'job_title': '',
+    'seniority': '',
+    'company_name': '',
+    'job_type': '',
+    'region': '',
+    'salary': '',
+    'min_salary': '',
+    'max_salary': '',
+    'salary_currency': '',
+    'pub_date_timestamp': '',
+    'expiry_date_timestamp': '',
+    'timestamp': '',
+    'job_ad_link': ''
+    }
 
 DATETIME_COLUMNS = ['pub_date_timestamp', 'expiry_date_timestamp']
 
@@ -98,9 +117,13 @@ TABLES_TO_CREATE = ['remotive_data',
                     'himalayas_data',
                     'jobicy_data']
 
-TABLE_MAPPING = {'remotive': 'remotive_data',
-                 'himalayas': 'himalayas_data',
-                 'jobicy': 'jobicy_data'}
+TABLE_MAPPING = {#'remotive': 'remotive_data',
+                 #'himalayas': 'himalayas_data',
+                 #'jobicy': 'jobicy_data',
+                 'remotive': 'jobs_listings_data',
+                 'himalayas': 'jobs_listings_data',
+                 'jobicy': 'jobs_listings_data'
+                 }
 
 
 # REUSABLE FUNCTIONS

@@ -14,7 +14,7 @@ queue = Queue(maxsize=4)
 try:
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         json_prep = data.prepare_json_data(queue, event)
-        # db_con = db.jobs_data_upload_to_db(queue, event)
+        db_con = db.jobs_data_upload_to_db(queue, event)
 
 
         # api = jobs.download_api_data()

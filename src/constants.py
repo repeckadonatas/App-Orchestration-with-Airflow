@@ -93,29 +93,21 @@ COMMON_TABLE_SCHEMA = [
     'job_ad_link'
 ]
 
-DATA_TYPES_SCHEMA = {
-    'job_title': '',
-    'seniority': '',
-    'company_name': '',
-    'job_type': '',
-    'region': '',
-    'salary': '',
-    'min_salary': '',
-    'max_salary': '',
-    'salary_currency': '',
-    'pub_date_timestamp': '',
-    'expiry_date_timestamp': '',
-    'timestamp': '',
-    'job_ad_link': ''
-    }
+STR_TO_FLOAT_SCHEMA = [
+    'salary',
+    'min_salary',
+    'max_salary'
+]
 
 DATETIME_COLUMNS = ['pub_date_timestamp', 'expiry_date_timestamp']
 
 
 # TABLES FOR DB
-TABLES_TO_CREATE = ['remotive_data',
-                    'himalayas_data',
-                    'jobicy_data']
+TABLES_TO_CREATE = [
+    'remotive_data',
+    'himalayas_data',
+    'jobicy_data'
+]
 
 TABLE_MAPPING = {#'remotive': 'remotive_data',
                  #'himalayas': 'himalayas_data',

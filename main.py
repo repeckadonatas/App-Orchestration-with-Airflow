@@ -5,6 +5,7 @@ from queue import Queue
 import src.db_functions as db
 import src.get_api_data as jobs
 import src.data_preparation as data
+import src.db_functions.data_upload_sequence as upload
 import src.logger as log
 
 main_logger = log.app_logger(__name__)
@@ -14,7 +15,7 @@ queue = Queue(maxsize=4)
 try:
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         json_prep = data.prepare_json_data(queue, event)
-        db_con = db.jobs_data_upload_to_db(queue, event)
+        db_con = upload.jobs_data_upload_to_db(queue, event)
 
 
         # api = jobs.download_api_data()

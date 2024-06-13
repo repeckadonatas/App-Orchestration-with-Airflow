@@ -44,7 +44,7 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
                     df_lists.columns = [f'{col}_{i}' for i in range(df_lists.shape[1])]
                     dataframe_new = pd.concat([dataframe_new, df_lists], axis=1)
                     dataframe_new = dataframe_new.drop(columns=[col], axis=1)
-                    dataframe_new.fillna(pd.isnull)
+                    dataframe_new.fillna(pd.NA)
                 else:
                     pass
         else:
@@ -102,20 +102,28 @@ def change_datetime_format(dataframe: pd.DataFrame,
     """
     for column in datetime_columns_list:
         if column in dataframe.columns:
-            dataframe[column] = pd.to_datetime(dataframe[column], unit='s', errors='coerce')
+            if dataframe[column].dtype == 'int64' or dataframe[column].dtype == 'float64':
+                dataframe[column] = pd.to_datetime(dataframe[column], unit='s', errors='coerce')
+            elif dataframe[column].dtype == 'object':
+                dataframe[column] = pd.to_datetime(dataframe[column], errors='coerce')
         else:
             pass
 
     return dataframe
 
 
-def common_dataframe_schema(dataframe: pd.DataFrame,
-                            dataframe_schema_definition: dict) -> pd.DataFrame:
+def str_to_float_schema(dataframe: pd.DataFrame,
+                        str_to_float_columns: list) -> pd.DataFrame:
     """
+    Ensures that columns referring to 'salary' that are of type 'str'
+    are always of type 'float' after flattening JSON dataframe.
+    :param dataframe: dataframe to change column dtypes.
+    :param str_to_float_columns: a list of column names.
+    :return: dataframe with formatted column values.
+    """
+    for column in str_to_float_columns:
+        dataframe[column] = pd.to_numeric(dataframe[column], errors='coerce').astype(float).fillna(pd.NA)
 
-    """
-    for column, dtype in dataframe_schema_definition.items():
-        dataframe[column] = dataframe[column].astype(dtype)
     return dataframe
 
 
@@ -138,7 +146,7 @@ def prepare_json_data(queue: str, event: str) -> None:
                 json_names = rename_columns(json_time, COLUMN_RENAME_MAP)
                 json_reorder = reorder_dataframe_columns(json_names, COMMON_TABLE_SCHEMA)
                 json_time_format = change_datetime_format(json_reorder, DATETIME_COLUMNS)
-                json_dtypes = common_dataframe_schema(json_time_format, DATA_TYPES_SCHEMA)
+                json_dtypes = str_to_float_schema(json_time_format, STR_TO_FLOAT_SCHEMA)
 
                 data_logger.info('A dataframe was created for a file: %s', json_file)
 

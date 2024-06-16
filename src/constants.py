@@ -152,7 +152,6 @@ def get_files_in_directory(dir_path: str) -> list:
     for file in files:
         if file.is_dir() or file.is_file():
             list_of_files.append(file.name)
-
     return list_of_files
 
 

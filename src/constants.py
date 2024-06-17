@@ -155,6 +155,22 @@ def get_files_in_directory(dir_path: str) -> list:
     return list_of_files
 
 
+def determine_table_name(file_name: str,
+                         table_mapping: dict) -> (str | None):
+    """
+    To map the correct dataframe with the table to load the data to.
+    The function is used to make sure that the data of a dataframe
+    is loaded into a correct table in the database.
+    Mapping logic is determined by a supplied table mapping dictionary.
+    :param file_name: file name to determine the table name.
+    :param table_mapping: a dictionary with dataframe names and matching table names.
+    """
+    file_name_lower = file_name.lower()
+    for prefix, table in table_mapping.items():
+        if file_name_lower.startswith(prefix.lower()):
+            return table
+
+
 # def init_db():
 #     """
 #     Initiate a database upon first connection

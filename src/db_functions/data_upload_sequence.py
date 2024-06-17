@@ -7,6 +7,9 @@ from src.db_functions.db_connection import db_logger, JobsDataDatabase
 
 
 class DataUpload(JobsDataDatabase):
+    """
+    Functions that determine the logic of data upload process.
+    """
 
     def __init__(self):
         super().__init__()
@@ -36,21 +39,6 @@ class DataUpload(JobsDataDatabase):
 
         return tables_list
 
-    def determine_table_name(file_name: str,
-                             table_mapping: dict) -> (str | None):
-        """
-        To map the correct dataframe with the table to load the data to.
-        The function is used to make sure that the data of a dataframe
-        is loaded into a correct table in the database.
-        Mapping logic is determined by a supplied table mapping dictionary.
-        :param file_name: file name to determine the table name.
-        :param table_mapping: a dictionary with dataframe names and matching table names.
-        """
-        file_name_lower = file_name.lower()
-        for prefix, table in table_mapping.items():
-            if file_name_lower.startswith(prefix.lower()):
-                return table
-
     def load_to_database(self, dataframe: pd.DataFrame, table_name: str) -> None:
         """
         Function to load the data of a dataframe to a specified table in the database.
@@ -67,12 +55,9 @@ class DataUpload(JobsDataDatabase):
 
 def jobs_data_upload_to_db(queue: str, event: str) -> None:
     """
-    Setting up the sequence in which
-    to execute data upload to database.
-    The pandas DataFrame's of the JSON files
-    are taken from a queue.
-    The dataframe is then loaded into a
-    dedicated table in the database.
+    Setting up the sequence in which to execute data upload to database.
+    The pandas DataFrame's of the JSON files are taken from a queue.
+    The dataframe is then loaded into a dedicated table in the database.
     """
     try:
         upload = DataUpload()
@@ -86,14 +71,6 @@ def jobs_data_upload_to_db(queue: str, event: str) -> None:
             upload.load_to_database(dataframe=dataframe, table_name='jobs_listings_data')
             db_logger.info('Dataframe "%s" loaded to a table "jobs_listings_data"', file_name)
 
-            # table = db.determine_table_name(file_name, TABLE_MAPPING)
-            #
-            # if table in tables_in_db:
-            #     db.load_to_database(dataframe=dataframe, table_name=table)
-            #     db_logger.info('Dataframe "{}" loaded to a table "{}"'.format(file_name, table))
-            # else:
-            #     db_logger.error('Table "{}" not found in the database'.format(table))
-        #
             queue.task_done()
     except (ProgrammingError, OperationalError, DatabaseError,
             DisconnectionError, DBAPIError, AttributeError) as e:

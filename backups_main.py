@@ -1,13 +1,11 @@
 """
-The main .py file to run backup functions from.
+The main .py file to run backup functions.
 """
 
-import source.backup_functions as bckp
+import src.backup_functions as bckp
 
 
 try:
     bckp.database_backup()
-    bckp.backup_ml_models()
-    bckp.remove_old_backups()
 except Exception as e:
     raise e

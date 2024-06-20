@@ -8,10 +8,13 @@ src/db_functions/__pycache__
 src/logger/__pycache__
 src/get_api_data/__pycache__
 src/data_preparation/__pycache__
+src/backup_functions/__pycache__/
+
 
 
 # OTHER FILES
 logs/
+backups/
 src/data/
 src/data_preparation/.ipynb_checkpoints
 src/data_preparation/data_preparation.ipynb

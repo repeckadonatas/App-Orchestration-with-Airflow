@@ -10,7 +10,8 @@ from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
 
 # DATE
-CURRENT_DATE = datetime.today().strftime("%Y%m%d_%H%m")
+DATE_TODAY = datetime.today().strftime('%Y_%m_%d')
+DATETIME_NOW = datetime.now().strftime("%Y%m%d_%H%M")
 
 
 # FOR LOGGER ONLY
@@ -26,8 +27,8 @@ INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 
 
 # FOR PG_DUMP FUNCTION
-# PG_DUMP_PATH = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
-PG_DUMP_PATH = 'pg_dump'
+PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
+# PG_DUMP = 'pg_dump'
 
 
 # API URLs
@@ -47,11 +48,11 @@ PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data'
 
 # BACKUPS LOCATION
 PATH_TO_BACKUPS = Path(__file__).cwd() / 'backups'
-BACKUP_FOLDERS_TODAY = PATH_TO_BACKUPS / ("backup_" + CURRENT_DATE)
+BACKUP_FOLDER_TODAY = PATH_TO_BACKUPS / f"backup_{DATE_TODAY}"
 
 
-# BACKUP FOLDERS FOR DATABASE AND ML MODELS
-DB_BACKUP_FILE = BACKUP_FOLDERS_TODAY / ("db_backup_" + CURRENT_DATE + ".sql")
+# BACKUP FOLDERS FOR DATABASE
+DB_BACKUP_FILE = BACKUP_FOLDER_TODAY / f"db_backup_{DATETIME_NOW}.sql"
 
 
 # FOR DATAFRAME

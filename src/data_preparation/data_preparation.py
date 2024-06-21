@@ -14,14 +14,18 @@ from src.constants import *
 data_logger = log.app_logger(__name__)
 
 
-def create_dataframe(file_json: str) -> pd.DataFrame:
+def create_dataframe(file_json: str,
+                     cols_normalize: list) -> pd.DataFrame:
     """
     Creates a pandas dataframe from a JSON file.
     Requires a name of the file.
+    :param file_json: JSON file
+    :param cols_normalize: List of columns to normalize
+    :return: dataframe with normalized JSON data
     """
     with open(PATH_TO_DATA_STORAGE / file_json, 'r', encoding='utf-8') as json_file:
         json_data = json.load(json_file)
-        df = pd.json_normalize(json_data, sep='_')
+        df = pd.json_normalize(json_data, cols_normalize, sep='_')
     return df
 
 
@@ -32,10 +36,9 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
     :return: new dataframe with flattened json data
     """
     for column in dataframe.columns:
-        if isinstance(dataframe[column], (dict, pd.core.series.Series)):
+        if isinstance(dataframe[column], (dict, pd.Series)):
             dataframe_flat = dataframe[column].apply(pd.Series)
-            dataframe_flat_0 = dataframe_flat[0].apply(pd.Series)
-            dataframe_new = pd.concat([dataframe, dataframe_flat_0], axis=1)
+            dataframe_new = pd.concat([dataframe, dataframe_flat], axis=1)
             dataframe_new = dataframe_new.drop(columns=[column], axis=1)
             
             for col in dataframe_new.columns:
@@ -45,10 +48,21 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
                     dataframe_new = pd.concat([dataframe_new, df_lists], axis=1)
                     dataframe_new = dataframe_new.drop(columns=[col], axis=1)
                     dataframe_new.fillna(pd.NA)
-                else:
-                    pass
         else:
-            pass
+            dataframe_new = dataframe
+
+    if 'salary' in dataframe_new.columns:
+        pattern = r'\$(\d+)\s*-?\s*\$(\d+)\s*/hour'
+        salary_extraction = dataframe_new['salary'].str.extract(pattern)
+        salary_extraction.columns = ['min_salary', 'max_salary']
+        salary_extraction = salary_extraction.apply(pd.to_numeric, errors='coerce')
+
+        salary_extraction['min_salary'] = salary_extraction['min_salary'] * 40 * 52
+        salary_extraction['max_salary'] = salary_extraction['max_salary'] * 40 * 52
+        salary_extraction['salary_currency'] = 'USD'
+
+        dataframe_new = dataframe_new.drop(columns=['salary'], axis=1)
+        dataframe_new = dataframe_new.join(salary_extraction)
             
     return dataframe_new
 
@@ -75,6 +89,7 @@ def rename_columns(dataframe: pd.DataFrame,
     :return: dataframe with new column names
     """
     dataframe.rename(columns=column_rename_map, inplace=True)
+    dataframe = dataframe.loc[:, ~dataframe.columns.duplicated()]
     
     return dataframe
 
@@ -140,7 +155,7 @@ def prepare_json_data(queue: str, event: str) -> None:
             data_logger.info('Files found in a directory: %s', json_files)
             
             for json_file in json_files:
-                json_to_df = create_dataframe(json_file)
+                json_to_df = create_dataframe(json_file, COLS_NORMALIZE)
                 json_flat = flatten_json_file(json_to_df)
                 json_time = add_timestamp(json_flat)
                 json_names = rename_columns(json_time, COLUMN_RENAME_MAP)

@@ -29,7 +29,7 @@ services:
 #      PGPORT: ${PGPORT}
 #      PGDATABASE: ${PGDATABASE}
 #    volumes:
-#      # FOR PROD EVIRONMENT SHOULD BE SETUP APPROPRIATELY!
+#      # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
 #      # THIS IS FOR DEMONSTRATION PURPOSES!
 #      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
 #

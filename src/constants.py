@@ -32,9 +32,11 @@ PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
 
 
 # API URLs
-REMOTIVE_API = "https://remotive.com/api/remote-jobs?limit=1"
-HIMALAYAS_API = "https://himalayas.app/jobs/api?limit=1"
-JOBICY_API = "https://jobicy.com/api/v2/remote-jobs?count=1"
+COUNT_LIMIT = 2
+
+REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
+HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
+JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
 
 API_DICT = {'REMOTIVE': REMOTIVE_API,
             'HIMALAYAS': HIMALAYAS_API,
@@ -56,25 +58,40 @@ DB_BACKUP_FILE = BACKUP_FOLDER_TODAY / f"db_backup_{DATETIME_NOW}.sql"
 
 
 # FOR DATAFRAME
+COLS_NORMALIZE = ['jobs']
+
 COLUMN_RENAME_MAP = {
     "title": "job_title",
+    "title_0": "job_title",
     "jobTitle": "job_title",
     "seniority_0": "seniority",
     "jobLevel": "seniority",
     "companyName": "company_name",
+    "companyName_0": "company_name",
     "applicationLink": "job_ad_link",
+    "applicationLink_0": "job_ad_link",
     "url": "job_ad_link",
     "minSalary": "min_salary",
+    "min_salary_annual": "min_salary",
     "annualSalaryMin": "min_salary",
     "maxSalary": "max_salary",
+    "max_salary_annual": "max_salary",
     "annualSalaryMax": "max_salary",
     "salaryCurrency": "salary_currency",
     "pubDate": "pub_date_timestamp",
     "publication_date": "pub_date_timestamp",
     "expiryDate": "expiry_date_timestamp",
+    "locationRestrictions": "region",
     "locationRestrictions_0": "region",
     "jobGeo": "region",
     "candidate_required_location": "region",
+    "candidate_required_location_0": "region",
+    "candidate_required_location_1": "region",
+    "candidate_required_location_2": "region",
+    "candidate_required_location_3": "region",
+    "candidate_required_location_4": "region",
+    "candidate_required_location_5": "region",
+    "candidate_required_location_6": "region",
     "jobType": "job_type"
     }
 
@@ -95,7 +112,7 @@ COMMON_TABLE_SCHEMA = [
 ]
 
 STR_TO_FLOAT_SCHEMA = [
-    'salary',
+    # 'salary',
     'min_salary',
     'max_salary'
 ]

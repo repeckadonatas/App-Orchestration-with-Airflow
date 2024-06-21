@@ -17,7 +17,7 @@ class JobsListingsData(Base):
     company_name = Column(String())
     job_type = Column(String())
     region = Column(String())
-    salary = Column(Float())
+    salary = Column(String())
     min_salary = Column(Float())
     max_salary = Column(Float())
     salary_currency = Column(String())

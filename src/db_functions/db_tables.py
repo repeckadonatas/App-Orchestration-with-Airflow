@@ -13,11 +13,10 @@ class JobsListingsData(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     job_title = Column(String())
-    seniority = Column(String())
     company_name = Column(String())
     job_type = Column(String())
     region = Column(String())
-    salary = Column(String())
+    salary = Column(Float())
     min_salary = Column(Float())
     max_salary = Column(Float())
     salary_currency = Column(String())

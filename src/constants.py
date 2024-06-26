@@ -156,14 +156,6 @@ TABLES_TO_CREATE = [
     'jobicy_data'
 ]
 
-TABLE_MAPPING = {  #'remotive': 'remotive_data',
-    #'himalayas': 'himalayas_data',
-    #'jobicy': 'jobicy_data',
-    'remotive': 'jobs_listings_data',
-    'himalayas': 'jobs_listings_data',
-    'jobicy': 'jobs_listings_data'
-}
-
 
 # REUSABLE FUNCTIONS
 def env_config() -> os.environ:

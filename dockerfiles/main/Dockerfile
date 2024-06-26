@@ -34,11 +34,11 @@ WORKDIR /app
 
 RUN python3 -m venv /venv
 
-COPY poetry.lock pyproject.toml ./
+COPY ../../poetry.lock pyproject.toml ./
 
 RUN poetry install --no-root
 
-COPY . .
+COPY ../.. .
 
 EXPOSE 5432
 

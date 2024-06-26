@@ -1,0 +1,41 @@
+version: "3"
+services:
+
+#  custom-airflow:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.airflow
+#    environment:
+
+  airflow-postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+    volumes:
+      - airflow-postgres-db-volume:/var/lib/postgresql/data
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    command: webserver
+    volumes:
+      - ./src/airflow/dags:/usr/local/airflow/dags
+    ports:
+      - "8080:8080"
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    command: scheduler
+    volumes:
+      - ./src/airflow/dags:/usr/local/airflow/dags
+

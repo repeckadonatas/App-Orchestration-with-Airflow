@@ -1,3 +1,6 @@
+from threading import Event
+from queue import Queue
+
 import pandas as pd
 from sqlalchemy import inspect
 from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, DisconnectionError, ProgrammingError
@@ -53,7 +56,7 @@ class DataUpload(JobsDataDatabase):
             self.conn.rollback()
 
 
-def jobs_data_upload_to_db(queue: str, event: str) -> None:
+def jobs_data_upload_to_db(queue: Queue, event: Event) -> None:
     """
     Setting up the sequence in which to execute data upload to database.
     The pandas DataFrame's of the JSON files are taken from a queue.

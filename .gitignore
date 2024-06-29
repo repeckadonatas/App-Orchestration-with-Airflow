@@ -15,6 +15,8 @@ src/backup_functions/__pycache__/
 # OTHER FILES
 logs/
 backups/
+plugins/
 src/data/
 src/data_preparation/.ipynb_checkpoints
 src/data_preparation/data_preparation.ipynb
+airflow-compose.txt

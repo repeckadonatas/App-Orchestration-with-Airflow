@@ -27,6 +27,9 @@ INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
 # PG_DUMP = 'pg_dump'
 
+# AIRFLOW DAGs SCHEDULE INTERVALS
+DATA_PIPELINE_DAG_SHD = "0 */6 * * *"
+DATABASE_BACKUP_DAG_SHD = "0 */6 * * *"
 
 # API URLs
 COUNT_LIMIT = 2

@@ -7,6 +7,8 @@ to the database.
 import json
 import pytz
 import pandas as pd
+from threading import Event
+from queue import Queue
 
 import src.logger as log
 from src.constants import *
@@ -200,7 +202,7 @@ def str_to_float_schema(dataframe: pd.DataFrame,
     return dataframe
 
 
-def prepare_json_data(queue: str, event: str) -> None:
+def prepare_json_data(queue: Queue, event: Event) -> None:
     """
     Setting up the sequence in which
     to execute data preparation functions.
@@ -211,7 +213,7 @@ def prepare_json_data(queue: str, event: str) -> None:
         try:
             json_files = get_files_in_directory(PATH_TO_DATA_STORAGE)
             data_logger.info('Files found in a directory: %s', json_files)
-            
+
             for json_file in json_files:
                 json_to_df = create_dataframe(json_file, COLS_NORMALIZE)
                 json_region = assign_region(json_to_df, REGIONS)

@@ -25,7 +25,8 @@ services:
     environment:
       PGUSER: ${PGUSER}
       PGPASSWORD: ${PGPASSWORD}
-      PGHOST: host.dockerfiles.internal
+#      PGHOST: host.dockerfiles.internal
+      PGHOST: project-db
       PGPORT: ${PGPORT}
       PGDATABASE: ${PGDATABASE}
     volumes:

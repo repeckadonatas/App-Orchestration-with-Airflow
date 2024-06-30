@@ -7,7 +7,7 @@ from queue import Queue
 from datetime import datetime, timedelta
 
 from airflow.models.dag import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 
 import src.get_api_data as api
 import src.data_preparation as prep

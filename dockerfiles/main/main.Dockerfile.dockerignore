@@ -7,31 +7,32 @@ src/__pycache__
 src/logger/__pycache__
 src/db_functions/__pycache__
 src/db_con_config/__pycache__
-src/data_preparation/__pycache__/
-src/get_weather_data/__pycache__/
-src/get_metals_data/__pycache__
+src/data_preparation/__pycache__
+src/get_api_data/__pycache__
 src/backup_functions/__pycache__
+src/airflow/dags/__pycache__
 
 # IPYNB
 src/data_preparation/.ipynb_checkpoints
 src/data_preparation/*.ipynb
 
 # SOURCE FOLDERS
-src/data/*
+src/airflow
 src/backup_functions
+src/data
 
 # OTHER FOLDERS
-logs/*
-model_rate_*
-trained_models/*
-backups/*
+logs/
+backups/
+scripts/
+dockerfiles/
 
 #  OTHER FILES
 backups_main.py
+airflow-compose.txt
 misc.txt
 README.md
 315.ipynb
 Dockerfile.*
-docker-compose.app.yaml
-src/airflow/docker-compose.airflow.yaml
+docker-compose.*
 for_secrets.sh

@@ -1,0 +1,96 @@
+services:
+
+  custom-airflow:
+    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:latest-python3.11}
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    volumes:
+      - ./../../src/airflow/dags:/opt/airflow/dags
+#      - ./../../logs:/opt/airflow/logs
+
+  airflow-postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+    volumes:
+      - airflow-postgres-db-volume:/var/lib/postgresql/data
+
+  airflow-init:
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    entrypoint: >
+      /bin/bash -c
+      "airflow db init && airflow users create \
+      --username airflow \
+      --password airflow \
+      --firstname admin \
+      --lastname admin \
+      --role Admin \
+      --email admin@example.com"
+    volumes:
+      - ./../../src/airflow/dags:/opt/airflow/dags
+
+  airflow-webserver:
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    command: webserver
+    depends_on:
+      - airflow-postgres
+      - airflow-init
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    volumes:
+      - ./../../src/airflow/dags:/opt/airflow/dags
+
+  airflow-scheduler:
+    build:
+      context: .
+      dockerfile: airflow.Dockerfile
+    command: scheduler
+    depends_on:
+      - airflow-postgres
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    healthcheck:
+      test: [ "CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"' ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    volumes:
+      - ./../../src/airflow/dags:/opt/airflow/dags
+
+volumes:
+  airflow-postgres-db-volume:

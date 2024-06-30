@@ -5,7 +5,7 @@ ENV AIRFLOW_DAGS=/usr/local/airflow/dags
 
 USER root
 
-RUN mkdir -p ${AIRFLOW_HOME} && chown -R airflow: ${AIRFLOW_HOME} \
+RUN mkdir -p ${AIRFLOW_HOME} && chown -R airflow: ${AIRFLOW_HOME}
 RUN mkdir -p ${AIRFLOW_DAGS} && chown -R airflow: ${AIRFLOW_DAGS}
 
 COPY /src/airflow/dags/ /usr/local/airflow/dags/

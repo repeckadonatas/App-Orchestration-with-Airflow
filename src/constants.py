@@ -24,8 +24,8 @@ LOG_FILE = PATH_TO_LOGS / 'logs/' / ("app_logger_" + datetime.today().strftime("
 INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 
 # FOR PG_DUMP FUNCTION
-PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
-# PG_DUMP = 'pg_dump'
+# PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
+PG_DUMP = 'pg_dump'
 
 # AIRFLOW DAGs SCHEDULE INTERVALS
 DATA_PIPELINE_DAG_SHD = "0 */6 * * *"

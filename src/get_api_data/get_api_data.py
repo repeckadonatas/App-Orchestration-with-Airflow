@@ -30,7 +30,9 @@ def get_api_data(api_name: str,
         if api_name == 'HIMALAYAS':
             scraper = cloudscraper.create_scraper()
             headers = {'Referer': 'https://himalayas.app/api',
-                       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0'}
+                       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) '
+                                     'AppleWebKit/537.36 (KHTML, like Gecko) '
+                                     'Gecko/20100101 Firefox/126.0 Chrome/91.0.4472.124 Safari/537.36'}
 
             response = scraper.get(api_url, headers=headers)
 

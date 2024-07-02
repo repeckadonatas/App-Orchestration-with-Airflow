@@ -43,4 +43,4 @@ COPY . .
 
 EXPOSE 5432
 
-CMD ["poetry", "run", "python3", "backups_main.py"]
+CMD ["poetry", "run", "python3", "backup_main.py"]

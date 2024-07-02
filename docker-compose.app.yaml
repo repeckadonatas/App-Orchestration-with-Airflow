@@ -37,7 +37,7 @@ services:
       - ./logs:/app/logs/
 
 #  backup-app:
-#    image: notexists/job-application-system-backup-app:1.0
+#    image: notexists/db-backup-app:1.0
 #    depends_on:
 #      project-db:
 #        condition: service_healthy

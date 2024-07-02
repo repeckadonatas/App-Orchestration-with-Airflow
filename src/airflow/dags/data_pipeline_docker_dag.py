@@ -65,14 +65,14 @@ with DAG(
 with DAG(
     "database_backup_docker_dag",
     default_args=default_args,
-    description='Database backup DAG. Controls the backups schedule.',
+    description='Database backup DAG. Controls the backup schedule.',
     schedule_interval=DATABASE_BACKUP_DAG_SHD,
     catchup=False,
 ) as backup_dag:
 
     task4 = DockerOperator(
         task_id='database_backup',
-        image='notexists/job-application-system-backup-app:1.0',
+        image='notexists/db-backup-app:1.0',
         api_version='auto',
         auto_remove=True,
         command='python -c "import src.backup_functions as bckp; bckp.database_backup()"',

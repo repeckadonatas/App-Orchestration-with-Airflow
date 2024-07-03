@@ -7,14 +7,13 @@ USER root
 
 RUN mkdir -p ${AIRFLOW_HOME} && \
     chown -R airflow: ${AIRFLOW_HOME}
-RUN mkdir -p /airflow && chown -R airflow: /airflow
 
 USER airflow
 
-WORKDIR /airflow
+COPY ../.. /opt/airflow
+RUN ls -la /opt/airflow
 
-COPY ../.. .
-#RUN ls -la /usr/local/airflow/dags/
+ENV PYTHONPATH="${PYTHONPATH}:/opt/airflow"
 
 RUN echo "[core]" > ${AIRFLOW_HOME}/airflow.cfg && \
     echo "airflow_home = ${AIRFLOW_HOME}" >> ${AIRFLOW_HOME}/airflow.cfg && \

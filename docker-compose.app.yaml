@@ -16,9 +16,12 @@ services:
     volumes:
       - project-db-data:/var/lib/postgresql/data
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - my-bridge-network
 
   project-app:
     image: notexists/job-application-system-app:1.0
+#    command: ["sleep", "1d"]
     depends_on:
       project-db:
         condition: service_healthy
@@ -36,28 +39,41 @@ services:
 
       - ./logs:/app/logs/
 
-#  backup-app:
-#    image: notexists/db-backup-app:1.0
-#    depends_on:
-#      project-db:
-#        condition: service_healthy
-#      project-app:
-#        condition: service_completed_successfully
-#    environment:
-#      PGUSER: ${PGUSER}
-#      PGPASSWORD: ${PGPASSWORD}
+#    network_mode: host
+    networks:
+      - my-bridge-network
+
+
+  backup-app:
+    image: notexists/db-backup-app:1.0
+    depends_on:
+      project-db:
+        condition: service_healthy
+      project-app:
+        condition: service_completed_successfully
+    environment:
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
 #      PGHOST: host.dockerfiles.internal
-#      PGPORT: ${PGPORT}
-#      PGDATABASE: ${PGDATABASE}
-#    volumes:
-#      # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
-#      # THIS IS FOR DEMONSTRATION PURPOSES!
-#      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
-#      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/backups:/app/backups/
-#
-#      - ./logs:/app/logs/
-#      - ./backups:/app/backups/
+      PGHOST: project-db
+      PGPORT: ${PGPORT}
+      PGDATABASE: ${PGDATABASE}
+    volumes:
+      # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
+      # THIS IS FOR DEMONSTRATION PURPOSES!
+      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
+      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/backups:/app/backups/
+
+      - ./logs:/app/logs/
+      - ./backups:/app/backups/
+
+    networks:
+      - my-bridge-network
 
 volumes:
   project-db-data:
     driver: local
+
+networks:
+  my-bridge-network:
+    external: true

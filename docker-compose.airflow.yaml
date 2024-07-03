@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
@@ -40,7 +43,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     entrypoint: >
       /bin/bash -c
-      "airflow db init && airflow users create \
+      "airflow db migrate && airflow users create \
       --username airflow \
       --password airflow \
       --firstname admin \

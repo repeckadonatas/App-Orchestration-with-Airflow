@@ -21,8 +21,13 @@ ENV POETRY_VERSION=1.8.2
 ENV POETRY_HOME=/usr/local
 ENV POETRY_VIRTUALENVS_CREATE=false
 
+###################
 RUN apt-get update && \
     apt-get install -y --no-install-recommends
+
+
+
+###################
 
 COPY /sql/init.sql /docker-entrypoint-initdb.d/
 

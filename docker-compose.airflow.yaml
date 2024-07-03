@@ -3,7 +3,7 @@ services:
   custom-airflow:
     image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:latest-python3.11}
     build:
-      context: dockerfiles/airflow_dockerfiles
+      context: .
       dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
     environment:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
@@ -11,7 +11,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     volumes:
       - ./src/airflow/dags:/opt/airflow/dags
-#      - ./../../logs:/opt/airflow/logs
+      - ./logs:/opt/airflow/logs
 
   airflow-postgres:
     image: postgres:15
@@ -29,7 +29,7 @@ services:
 
   airflow-init:
     build:
-      context: dockerfiles/airflow_dockerfiles
+      context: .
       dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
     depends_on:
       airflow-postgres:
@@ -49,10 +49,11 @@ services:
       --email admin@example.com"
     volumes:
       - ./src/airflow/dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
 
   airflow-webserver:
     build:
-      context: dockerfiles/airflow_dockerfiles
+      context: .
       dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
     command: webserver
     depends_on:
@@ -71,10 +72,11 @@ services:
     restart: always
     volumes:
       - ./src/airflow/dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
 
   airflow-scheduler:
     build:
-      context: dockerfiles/airflow_dockerfiles
+      context: .
       dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
     command: scheduler
     depends_on:
@@ -91,6 +93,7 @@ services:
     restart: always
     volumes:
       - ./src/airflow/dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
 
 volumes:
   airflow-postgres-db-volume:

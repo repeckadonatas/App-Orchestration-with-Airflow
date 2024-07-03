@@ -2,20 +2,19 @@ FROM apache/airflow:latest-python3.11
 
 ENV AIRFLOW_HOME=/opt/airflow
 ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
-#ENV AIRFLOW_DAGS=/usr/local/airflow/dags
 
 USER root
 
 RUN mkdir -p ${AIRFLOW_HOME} && \
     chown -R airflow: ${AIRFLOW_HOME}
-#RUN mkdir -p ${AIRFLOW_DAGS} && chown -R airflow: ${AIRFLOW_DAGS}
-
-#WORKDIR /airflow
-
-#COPY ../src/airflow/dags/ /usr/local/airflow/dags/
-#RUN ls -la /usr/local/airflow/dags/
+RUN mkdir -p /airflow && chown -R airflow: /airflow
 
 USER airflow
+
+WORKDIR /airflow
+
+COPY ../.. .
+#RUN ls -la /usr/local/airflow/dags/
 
 RUN echo "[core]" > ${AIRFLOW_HOME}/airflow.cfg && \
     echo "airflow_home = ${AIRFLOW_HOME}" >> ${AIRFLOW_HOME}/airflow.cfg && \

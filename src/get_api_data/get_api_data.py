@@ -28,11 +28,20 @@ def get_api_data(api_name: str,
     """
     try:
         if api_name == 'HIMALAYAS':
-            scraper = cloudscraper.create_scraper()
+            scraper = cloudscraper.create_scraper(
+                browser={'browser': 'chrome',
+                         'platform': 'windows',
+                         'desktop': True,
+                         'mobile': False,
+                         }
+            )
             headers = {'Referer': 'https://himalayas.app/api',
                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) '
                                      'AppleWebKit/537.36 (KHTML, like Gecko) '
-                                     'Gecko/20100101 Firefox/126.0 Chrome/91.0.4472.124 Safari/537.36'}
+                                     'Gecko/20100101 Firefox/126.0 Chrome/91.0.4472.124 Safari/537.36',
+                       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                       'Accept-Language': 'en-US,en;q=0.8',
+                       'Connection': 'keep-alive'}
 
             response = scraper.get(api_url, headers=headers)
 

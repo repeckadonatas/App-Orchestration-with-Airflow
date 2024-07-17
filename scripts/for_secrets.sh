@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 POSTGRES_USER=$(grep "^POSTGRES_USER=" .env | cut -d '=' -f2)
 POSTGRES_PASSWORD=$(grep "^POSTGRES_PASSWORD=" .env | cut -d '=' -f2)

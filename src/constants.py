@@ -27,10 +27,6 @@ INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 # PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
 PG_DUMP = 'pg_dump'
 
-# AIRFLOW DAGs SCHEDULE INTERVALS
-DATA_PIPELINE_DAG_SHD = "0 */6 * * *"
-DATABASE_BACKUP_DAG_SHD = "0 */6 * * *"
-
 # API URLs
 COUNT_LIMIT = 2
 
@@ -75,7 +71,7 @@ REGIONS = {
                       'Grenada', 'Guatemala', 'Haiti', 'Honduras', 'Jamaica',
                       'Mexico', 'Nicaragua', 'Panama', 'Saint Kitts and Nevis', 'Saint Lucia',
                       'Saint Vincent and the Grenadines', 'Trinidad and Tobago', 'United States of America ',
-                      'USA'],
+                      'USA', '  USA'],
     'South America': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia',
                       'Ecuador', 'Guyana', 'Paraguay', 'Peru', 'Suriname',
                       'Uruguay', 'Venezuela'],
@@ -126,6 +122,7 @@ COLUMN_RENAME_MAP = {
     "expiryDate": "expiry_date_timestamp",
     0: "region",
     "0": "region",
+    "jobGeo": "region",
     "jobType": "job_type"
 }
 

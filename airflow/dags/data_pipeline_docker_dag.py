@@ -3,7 +3,19 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 
-from src.constants import API_DICT
+
+# API URLs
+COUNT_LIMIT = 2
+
+REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
+HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
+JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
+
+API_DICT = {
+    'REMOTIVE': REMOTIVE_API,
+    'HIMALAYAS': HIMALAYAS_API,
+    'JOBICY': JOBICY_API
+    }
 
 DATA_PIPELINE_DAG_SCHD = "0 */6 * * *"
 DATABASE_BACKUP_DAG_SCHD = "0 */6 * * *"
@@ -15,7 +27,7 @@ default_args = {
     "email_on_failure": False,
     "email_on_retry": False,
     "retries": 1,
-    "retry_delay": timedelta(minutes=1),
+    "retry_delay": timedelta(seconds=5),
 }
 
 with DAG(
@@ -29,12 +41,11 @@ with DAG(
     for api_name in API_DICT.keys():
         task1 = DockerOperator(
             task_id=f'download_{api_name}_data',
-            image='notexists/job-application-system-app:1.0',
+            image='notexists/job-application-system-app:1.1',
             command=["python3", "main.py", api_name],
-            docker_url='unix://var/run/docker.sock',
-            volume=[],
+            docker_url='unix:///var/run/docker.sock',
             network_mode='bridge',
-            api_version='auto',
+            api_version='1.45',
             auto_remove=True,
             dag=data_pipeline_dag
         )
@@ -50,11 +61,11 @@ with DAG(
 
     task2 = DockerOperator(
         task_id='database_backup',
-        image='notexists/db-backup-app:1.0',
+        image='notexists/db-backup-app:1.1',
         command=["python3", "backup_main.py"],
-        docker_url='unix://var/run/docker.sock',
+        docker_url='unix:///var/run/docker.sock',
         network_mode='bridge',
-        api_version='auto',
+        api_version='1.45',     # 1.45
         auto_remove=True,
         dag=backup_dag
     )

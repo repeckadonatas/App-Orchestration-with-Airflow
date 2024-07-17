@@ -4,8 +4,8 @@ RUN mkdir /run/secrets
 
 RUN --mount=type=secret,id=POSTGRES_USER
 RUN --mount=type=secret,id=POSTGRES_PASSWORD
-RUN --mount=type=secret,id=PGHOST
-RUN --mount=type=secret,id=PGPORT
+#RUN --mount=type=secret,id=PGHOST
+#RUN --mount=type=secret,id=PGPORT
 RUN --mount=type=secret,id=PGDATABASE
 
 ENV POSTGRES_USER=/run/secrets/POSTGRES_USER
@@ -13,8 +13,8 @@ ENV POSTGRES_PASSWORD=/run/secrets/POSTGRES_PASSWORD
 
 ENV PGUSER=/run/secrets/POSTGRES_USER
 ENV PGPASSWORD=/run/secrets/POSTGRES_PASSWORD
-ENV PGHOST=/run/secrets/PGHOST
-ENV PGPORT=/run/secrets/PGPORT
+#ENV PGHOST=/run/secrets/PGHOST
+#ENV PGPORT=/run/secrets/PGPORT
 ENV PGDATABASE=/run/secrets/PGDATABASE
 
 ENV POETRY_VERSION=1.8.2
@@ -24,6 +24,8 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 RUN apt-get update && \
     apt-get install -y --no-install-recommends && \
     apt-get install -y postgresql-client
+
+RUN mkdir -p /app/logs
 
 COPY /sql/init.sql /docker-entrypoint-initdb.d/
 
@@ -43,4 +45,4 @@ COPY . .
 
 EXPOSE 5432
 
-CMD ["poetry", "run", "python3", "backup_main.py"]
+CMD ["echo", "Hello, World", "\n", "This is the backup app."]

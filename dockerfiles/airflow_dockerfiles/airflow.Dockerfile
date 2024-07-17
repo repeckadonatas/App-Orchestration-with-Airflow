@@ -3,17 +3,17 @@ FROM apache/airflow:latest-python3.11
 ENV AIRFLOW_HOME=/opt/airflow
 ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
 
+ENV PYTHONPATH="${PYTHONPATH}:/opt/airflow"
+
 USER root
 
 RUN mkdir -p ${AIRFLOW_HOME} && \
     chown -R airflow: ${AIRFLOW_HOME}
 
-USER airflow
-
-COPY ../.. /opt/airflow
+COPY ../.. .
 RUN ls -la /opt/airflow
 
-ENV PYTHONPATH="${PYTHONPATH}:/opt/airflow"
+USER airflow
 
 RUN echo "[core]" > ${AIRFLOW_HOME}/airflow.cfg && \
     echo "airflow_home = ${AIRFLOW_HOME}" >> ${AIRFLOW_HOME}/airflow.cfg && \

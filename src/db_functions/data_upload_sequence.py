@@ -1,5 +1,5 @@
 from threading import Event
-from queue import Queue
+from queue import Queue, Empty
 
 import pandas as pd
 from sqlalchemy import inspect
@@ -56,6 +56,7 @@ class DataUpload(JobsDataDatabase):
             self.conn.rollback()
 
 
+# SETTING THE LOGIC FOR DATA UPLOAD TO A DATABASE
 def jobs_data_upload_to_db(queue: Queue, event: Event) -> None:
     """
     Setting up the sequence in which to execute data upload to database.
@@ -69,12 +70,15 @@ def jobs_data_upload_to_db(queue: Queue, event: Event) -> None:
         db_logger.info('Table(s) found in a database: %s\n', tables_in_db)
 
         while not event.is_set() or not queue.empty():
-            dataframe, file_name = queue.get()
+            db_logger.info('Getting data from queue...')
+            dataframe, file_name = queue.get(timeout=5)
 
             upload.load_to_database(dataframe=dataframe, table_name='jobs_listings_data')
-            db_logger.info('Dataframe "%s" loaded to a table "jobs_listings_data"', file_name)
+            db_logger.info('Data for "%s" was uploaded to a table "jobs_listings_data"', file_name)
 
             queue.task_done()
+    except Empty:
+        db_logger.error("Queue is empty.")
     except (ProgrammingError, OperationalError, DatabaseError,
             DisconnectionError, DBAPIError, AttributeError) as e:
         db_logger.error("An error occurred while loading the data: %s.", e, exc_info=True)

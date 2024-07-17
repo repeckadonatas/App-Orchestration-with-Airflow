@@ -11,7 +11,6 @@ src/data_preparation/__pycache__
 src/backup_functions/__pycache__/
 airflow/dags/__pycache__/
 
-
 # OTHER FILES
 dockerfiles/airflow_dockerfiles/dags
 logs/

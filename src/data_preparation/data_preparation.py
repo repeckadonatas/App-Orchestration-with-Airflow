@@ -1,6 +1,6 @@
 """
 Functions used to prepare JSON files from
-an API responses before uploading the data
+API responses before uploading the data
 to the database.
 """
 
@@ -202,6 +202,7 @@ def str_to_float_schema(dataframe: pd.DataFrame,
     return dataframe
 
 
+# SETTING THE LOGIC FOR JSON FILE NORMALIZATION
 def prepare_json_data(queue: Queue, event: Event) -> None:
     """
     Setting up the sequence in which
@@ -233,4 +234,3 @@ def prepare_json_data(queue: Queue, event: Event) -> None:
             print()
         except Exception as e:
             data_logger.error("An error occurred while creating a dataframe:\n %s\n", e, exc_info=True)
-        

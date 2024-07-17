@@ -9,10 +9,11 @@ src/logger/__pycache__
 src/get_api_data/__pycache__
 src/data_preparation/__pycache__
 src/backup_functions/__pycache__/
-src/airflow/dags/__pycache__/
+airflow/dags/__pycache__/
 
 
 # OTHER FILES
+dockerfiles/airflow_dockerfiles/dags
 logs/
 backups/
 plugins/

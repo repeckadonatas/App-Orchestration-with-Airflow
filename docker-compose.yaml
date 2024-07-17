@@ -21,7 +21,7 @@ services:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   project-app:
-    image: notexists/job-application-system-app:1.0
+    image: notexists/job-application-system-app:1.1
     container_name: project-app
     networks:
       - my-bridge-network
@@ -31,14 +31,15 @@ services:
     environment:
       PGUSER: ${PGUSER}
       PGPASSWORD: ${PGPASSWORD}
-      PGHOST: project-db
-      PGPORT: ${PGPORT}
+#      PGHOST: project-db
+      PGHOST: host.docker.internal
+      PGPORT: 5432
       PGDATABASE: ${PGDATABASE}
     volumes:
       - ./logs:/app/logs/
 
   project-backup-app:
-    image: notexists/db-backup-app:1.0
+    image: notexists/db-backup-app:1.1
     container_name: project-backup-app
     networks:
       - my-bridge-network
@@ -50,8 +51,9 @@ services:
     environment:
       PGUSER: ${PGUSER}
       PGPASSWORD: ${PGPASSWORD}
-      PGHOST: project-db
-      PGPORT: ${PGPORT}
+#      PGHOST: project-db
+      PGHOST: host.docker.internal
+      PGPORT: 5432
       PGDATABASE: ${PGDATABASE}
     volumes:
       - ./logs:/app/logs/
@@ -73,6 +75,7 @@ services:
       retries: 5
     volumes:
       - airflow-postgres-db-volume:/var/lib/postgresql/data
+      - /var/run/docker.sock:/var/run/docker.sock
 
   airflow-init:
     image: apache/airflow:latest-python3.11
@@ -86,6 +89,7 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'super_secret_key'
     entrypoint: >
       /bin/bash -c
       "airflow db migrate && airflow users create \
@@ -96,7 +100,10 @@ services:
       --role Admin \
       --email admin@example.com"
     volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./airflow/dags:/opt/airflow/dags:rw
+      - ./logs:/opt/airflow/logs:rw
+    user: "${UID}:${GID}"
 
   airflow-webserver:
     image: apache/airflow:latest-python3.11
@@ -112,6 +119,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'super_secret_key'
     healthcheck:
       test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
       interval: 10s
@@ -119,7 +127,10 @@ services:
       retries: 5
     restart: always
     volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./airflow/dags:/opt/airflow/dags:rw
+      - ./logs:/opt/airflow/logs:rw
+    user: "${UID}:${GID}"
 
   airflow-scheduler:
     image: apache/airflow:latest-python3.11
@@ -133,6 +144,7 @@ services:
     environment:
       AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+      AIRFLOW__WEBSERVER__SECRET_KEY: 'super_secret_key'
     healthcheck:
       test: [ "CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"' ]
       interval: 10s
@@ -140,7 +152,10 @@ services:
       retries: 5
     restart: always
     volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./airflow/dags:/opt/airflow/dags:rw
+      - ./logs:/opt/airflow/logs:rw
+    user: "${UID}:${GID}"
 
 volumes:
   airflow-postgres-db-volume:
@@ -150,4 +165,5 @@ volumes:
 
 networks:
   my-bridge-network:
+    driver: bridge
     external: true

@@ -60,28 +60,13 @@ def get_api_data(api_name: str,
 
                 with open(PATH_TO_DATA_STORAGE / (api_name + '_response.json'), 'w', encoding='utf-8') as f:
                     json.dump(json_response, f, ensure_ascii=False, indent=4)
-                    api_logger.info(f'Downloaded API data from "{api_name}..."\n')
+                    api_logger.info('Downloaded API data from "%s."\n', api_name)
 
             except JSONDecodeError as e:
-                api_logger.info(f'A JSON decode error occurred for "{api_name}": %s\n', e, exc_info=True)
+                api_logger.info('A JSON decode error occurred for "%s": %s\n', api_name, e, exc_info=True)
 
     except (RequestException, URLRequired, InvalidURL, HTTPError) as e:
-        api_logger.error(f'An HTTP error occurred for "{api_name}": {e}', exc_info=True)
+        api_logger.error('An error occurred for "%s": %s', api_name, e, exc_info=True)
 
     except Exception as e:
-        api_logger.error(f'Unexpected error occurred for "{api_name}": %s\n', e, exc_info=True)
-
-
-def download_api_data():
-    """
-    Uses the values from a supplied dictionary of API URLs.
-    If a URL of an API is unavailable, a message is displayed
-    and the API data is skipped from download.
-    Else, the API response data is saved to JSON files.
-    """
-    api_values = read_dict(API_DICT)
-    for api_name, api_url in api_values:
-        if not api_url:
-            api_logger.info(f'Missing URL for "{api_name}"!\n')
-        else:
-            get_api_data(api_name, api_url)
+        api_logger.error('Unexpected error occurred for "%s": %s\n', api_name, e, exc_info=True)

@@ -1,6 +1,9 @@
 services:
   project-db:
     image: postgres:15
+    container_name: project-db
+    networks:
+      - my-bridge-network
     restart: always
     ports:
       - '5432:5432'
@@ -16,12 +19,13 @@ services:
     volumes:
       - project-db-data:/var/lib/postgresql/data
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - my-bridge-network
 
   project-app:
     image: notexists/job-application-system-app:1.0
-#    command: ["sleep", "1d"]
+    container_name: project-app
+    networks:
+      - my-bridge-network
+#    command: ["sleep", "1d"]  # FOR CONTAINER CHECK UP
     depends_on:
       project-db:
         condition: service_healthy
@@ -35,17 +39,13 @@ services:
     volumes:
       # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
       # THIS IS FOR DEMONSTRATION PURPOSES!
-      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
-
       - ./logs:/app/logs/
 
-#    network_mode: host
+  project-backup-app:
+    image: notexists/db-backup-app:1.0
+    container_name: project-backup-app
     networks:
       - my-bridge-network
-
-
-  backup-app:
-    image: notexists/db-backup-app:1.0
     depends_on:
       project-db:
         condition: service_healthy
@@ -61,14 +61,8 @@ services:
     volumes:
       # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
       # THIS IS FOR DEMONSTRATION PURPOSES!
-      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/logs:/app/logs/
-      #- /mnt/c/Users/HP/Desktop/TURING/Projects/Module 2/DE-Capstone-2/backups:/app/backups/
-
       - ./logs:/app/logs/
       - ./backups:/app/backups/
-
-    networks:
-      - my-bridge-network
 
 volumes:
   project-db-data:

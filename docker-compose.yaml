@@ -1,0 +1,153 @@
+services:
+  project-db:
+    image: postgres:15
+    container_name: project-db
+    networks:
+      - my-bridge-network
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: "trust"  # SHOULD NOT BE USED IN PROD ENVIRONMENT!!
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 20s
+      retries: 5
+    volumes:
+      - project-db-data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  project-app:
+    image: notexists/job-application-system-app:1.0
+    container_name: project-app
+    networks:
+      - my-bridge-network
+    depends_on:
+      project-db:
+        condition: service_healthy
+    environment:
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGHOST: project-db
+      PGPORT: ${PGPORT}
+      PGDATABASE: ${PGDATABASE}
+    volumes:
+      - ./logs:/app/logs/
+
+  project-backup-app:
+    image: notexists/db-backup-app:1.0
+    container_name: project-backup-app
+    networks:
+      - my-bridge-network
+    depends_on:
+      project-db:
+        condition: service_healthy
+      project-app:
+        condition: service_completed_successfully
+    environment:
+      PGUSER: ${PGUSER}
+      PGPASSWORD: ${PGPASSWORD}
+      PGHOST: project-db
+      PGPORT: ${PGPORT}
+      PGDATABASE: ${PGDATABASE}
+    volumes:
+      - ./logs:/app/logs/
+      - ./backups:/app/backups/
+
+  airflow-postgres:
+    image: postgres:14
+    container_name: airflow-postgres
+    networks:
+      - my-bridge-network
+    restart: always
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+    volumes:
+      - airflow-postgres-db-volume:/var/lib/postgresql/data
+
+  airflow-init:
+    image: apache/airflow:latest-python3.11
+    container_name: airflow-init
+    networks:
+      - my-bridge-network
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    entrypoint: >
+      /bin/bash -c
+      "airflow db migrate && airflow users create \
+      --username airflow \
+      --password airflow \
+      --firstname admin \
+      --lastname admin \
+      --role Admin \
+      --email admin@example.com"
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+
+  airflow-webserver:
+    image: apache/airflow:latest-python3.11
+    container_name: airflow-webserver
+    networks:
+      - my-bridge-network
+    command: webserver
+    depends_on:
+      - airflow-postgres
+      - airflow-init
+    ports:
+      - "8080:8080"
+    environment:
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+
+  airflow-scheduler:
+    image: apache/airflow:latest-python3.11
+    container_name: airflow-scheduler
+    networks:
+      - my-bridge-network
+    command: scheduler
+    depends_on:
+      - airflow-postgres
+      - airflow-init
+    environment:
+      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    healthcheck:
+      test: [ "CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"' ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    volumes:
+      - ./src/airflow/dags:/opt/airflow/dags
+
+volumes:
+  airflow-postgres-db-volume:
+    driver: local
+  project-db-data:
+    driver: local
+
+networks:
+  my-bridge-network:
+    external: true

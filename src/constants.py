@@ -194,6 +194,16 @@ def get_files_in_directory(dir_path: str) -> list:
     return list_of_files
 
 
+def remove_files_in_directory(dir_path: str) -> None:
+    """
+    Removes files in a set directory.
+    :param dir_path: path to a directory.
+    """
+    files = os.scandir(dir_path)
+    for file in files:
+        os.remove(file)
+
+
 def determine_table_name(file_name: str,
                          table_mapping: dict) -> (str | None):
     """
@@ -208,13 +218,3 @@ def determine_table_name(file_name: str,
     for prefix, table in table_mapping.items():
         if file_name_lower.startswith(prefix.lower()):
             return table
-
-# def init_db():
-#     """
-#     Initiate a database upon first connection
-#     if it doesn't exist.
-#     """
-#     with open(INIT_DB, 'r') as db_f:
-#         db_init = db_f.read()
-#         env_config().get('PG_PASSWORD')
-#         psycopg.connect().cursor().execute(db_init)

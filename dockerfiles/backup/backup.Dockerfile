@@ -1,21 +1,12 @@
 FROM python:3.11.4
 
-RUN mkdir /run/secrets
-
-RUN --mount=type=secret,id=POSTGRES_USER
-RUN --mount=type=secret,id=POSTGRES_PASSWORD
+#RUN mkdir /run/secrets
+#
+#RUN --mount=type=secret,id=POSTGRES_USER
+#RUN --mount=type=secret,id=POSTGRES_PASSWORD
 #RUN --mount=type=secret,id=PGHOST
 #RUN --mount=type=secret,id=PGPORT
-RUN --mount=type=secret,id=PGDATABASE
-
-ENV POSTGRES_USER=/run/secrets/POSTGRES_USER
-ENV POSTGRES_PASSWORD=/run/secrets/POSTGRES_PASSWORD
-
-ENV PGUSER=/run/secrets/POSTGRES_USER
-ENV PGPASSWORD=/run/secrets/POSTGRES_PASSWORD
-#ENV PGHOST=/run/secrets/PGHOST
-#ENV PGPORT=/run/secrets/PGPORT
-ENV PGDATABASE=/run/secrets/PGDATABASE
+#RUN --mount=type=secret,id=PGDATABASE
 
 ENV POETRY_VERSION=1.8.2
 ENV POETRY_HOME=/usr/local
@@ -44,5 +35,6 @@ RUN poetry install --no-root
 COPY . .
 
 EXPOSE 5432
+EXPOSE 5433
 
-CMD ["echo", "Hello, World", "\n", "This is the backup app."]
+CMD ["poetry", "run", "python3", "backup_main.py"]

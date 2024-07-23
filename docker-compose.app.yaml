@@ -1,12 +1,24 @@
+# COMMON SETTINGS FOR APP SERVICES
+x-app-common: &app-common
+  networks:
+    - my-bridge-network
+  env_file:
+    - .env
+  environment:
+    PGUSER: ${PGUSER}
+    PGPASSWORD: ${PGPASSWORD}
+    PGPORT: ${PGPORT}
+    PGDATABASE: ${PGDATABASE}
+    PGHOST: project-db
+
 services:
+
   project-db:
+    <<: *app-common
     image: postgres:15
-    container_name: project-db
-    networks:
-      - my-bridge-network
     restart: always
     ports:
-      - '5432:5432'
+      - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -21,46 +33,26 @@ services:
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   project-app:
-    image: notexists/job-application-system-app:1.0
-    container_name: project-app
-    networks:
-      - my-bridge-network
+    <<: *app-common
+    image: notexists/job-application-system-app:1.1
 #    command: ["sleep", "1d"]  # FOR CONTAINER CHECK UP
     depends_on:
       project-db:
         condition: service_healthy
-    environment:
-      PGUSER: ${PGUSER}
-      PGPASSWORD: ${PGPASSWORD}
-#      PGHOST: host.dockerfiles.internal
-      PGHOST: project-db
-      PGPORT: ${PGPORT}
-      PGDATABASE: ${PGDATABASE}
     volumes:
-      # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
-      # THIS IS FOR DEMONSTRATION PURPOSES!
+#      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
       - ./logs:/app/logs/
 
   project-backup-app:
-    image: notexists/db-backup-app:1.0
-    container_name: project-backup-app
-    networks:
-      - my-bridge-network
+    <<: *app-common
+    image: notexists/db-backup-app:1.1
+#    command: ["sleep", "1d"]  # FOR CONTAINER CHECK UP
     depends_on:
       project-db:
         condition: service_healthy
       project-app:
         condition: service_completed_successfully
-    environment:
-      PGUSER: ${PGUSER}
-      PGPASSWORD: ${PGPASSWORD}
-#      PGHOST: host.dockerfiles.internal
-      PGHOST: project-db
-      PGPORT: ${PGPORT}
-      PGDATABASE: ${PGDATABASE}
     volumes:
-      # FOR PROD ENVIRONMENT SHOULD BE SETUP APPROPRIATELY!
-      # THIS IS FOR DEMONSTRATION PURPOSES!
       - ./logs:/app/logs/
       - ./backups:/app/backups/
 
@@ -70,4 +62,5 @@ volumes:
 
 networks:
   my-bridge-network:
+    driver: bridge
     external: true

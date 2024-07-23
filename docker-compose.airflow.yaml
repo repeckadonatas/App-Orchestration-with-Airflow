@@ -1,57 +1,59 @@
+# COMMON SETTINGS FOR AIRFLOW SERVICES
+x-airflow-common: &airflow-common
+  networks:
+    - my-bridge-network
+  env_file:
+    - .env
+  environment:
+    PYTHONPATH: /opt/airflow:/opt/airflow/src
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
+    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+    AIRFLOW__CORE__ALLOW_PICKLE_DESERIALIZE: 'true'
+    AIRFLOW__CORE__ENABLE_XCOM_PICKLING: 'true'
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__ALLOWED_DESERIALIZATION_CLASSES: airflow.* astro.*
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: >
+      postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >
+      postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+    AIRFLOW_CONN_PROJECT_DB: >
+      postgresql+psycopg2://${PGUSER}:${PGPASSWORD}@project-db:${PGPORT}/${PGDATABASE}
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
+  user: "${AIRFLOW_UID:-50000}:0"
+#  user: "0:0"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ./dags:/opt/airflow/dags:rw
+    - ./logs:/opt/airflow/logs:rw
+    - ./src:/opt/airflow/src:rw
+    - /etc/localtime:/etc/localtime:ro
+
 services:
 
-  airflow-custom:
-    build:
-      context: .
-      dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
-#      dockerfile: dockerfiles/airflow_dockerfiles/Dockerfile
-    container_name: airflow-custom
-    networks:
-      - my-bridge-network
-    depends_on:
-      airflow-init:
-        condition: service_completed_successfully
-    command: standalone
-    environment:
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
-    volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
-#      - ./logs:/opt/airflow/logs
-
   airflow-postgres:
+    <<: *airflow-common
     image: postgres:14
-    container_name: airflow-postgres
-    networks:
-      - my-bridge-network
     restart: always
+    ports:
+      - "5433:5432"
     environment:
-      - POSTGRES_USER=airflow
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
     healthcheck:
       test: [ "CMD", "pg_isready", "-U", "airflow" ]
       interval: 5s
       retries: 5
     volumes:
-      - airflow-postgres-db-volume:/var/lib/postgresql/data
+      - airflow-db-volume:/var/lib/postgresql/data
+      - /var/run/docker.sock:/var/run/docker.sock
 
   airflow-init:
-    build:
-      context: .
-      dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
-#      dockerfile: dockerfiles/airflow_dockerfiles/Dockerfile
-    container_name: airflow-init
-    networks:
-      - my-bridge-network
+    <<: *airflow-common
+    image: apache/airflow:latest-python3.11
     depends_on:
-      airflow-postgres:
-        condition: service_healthy
-    environment:
-      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+      - airflow-postgres
     entrypoint: >
       /bin/bash -c
       "airflow db migrate && airflow users create \
@@ -61,65 +63,56 @@ services:
       --lastname admin \
       --role Admin \
       --email admin@example.com"
-    volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
-#      - ./logs:/opt/airflow/logs
+    restart: on-failure
 
   airflow-webserver:
-    build:
-      context: .
-      dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
-#      dockerfile: dockerfiles/airflow_dockerfiles/Dockerfile
-    container_name: airflow-webserver
-    networks:
-      - my-bridge-network
+    <<: *airflow-common
+    image: apache/airflow:latest-python3.11
     command: webserver
     depends_on:
       - airflow-postgres
       - airflow-init
     ports:
       - "8080:8080"
-    environment:
-      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     healthcheck:
       test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
       interval: 10s
       timeout: 10s
       retries: 5
     restart: always
-    volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
-#      - ./logs:/opt/airflow/logs
+#    user: "0:0"
 
   airflow-scheduler:
-    build:
-      context: .
-      dockerfile: dockerfiles/airflow_dockerfiles/airflow.Dockerfile
-    container_name: airflow-scheduler
-    networks:
-      - my-bridge-network
+    <<: *airflow-common
+    image: apache/airflow:latest-python3.11
     command: scheduler
     depends_on:
       - airflow-postgres
       - airflow-init
-    environment:
-      AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     healthcheck:
       test: [ "CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"' ]
       interval: 10s
       timeout: 10s
       retries: 5
     restart: always
-    volumes:
-      - ./src/airflow/dags:/opt/airflow/dags
-#      - ./logs:/opt/airflow/logs
-#      - /var/run/docker.sock:/var/run/docker.sock:rw
+
+secrets:
+  PGUSER:
+    file: ./secrets/pguser.txt
+  PGPASSWORD:
+    file: ./secrets/pgpassword.txt
+  PGPORT:
+    file: ./secrets/pgport.txt
+  PGDATABASE:
+    file: ./secrets/pgdatabase.txt
+  AIRFLOW__WEBSERVER__SECRET_KEY:
+    file: ./secrets/airflow_secret_key.txt
 
 volumes:
-  airflow-postgres-db-volume:
+  airflow-db-volume:
+    driver: local
 
 networks:
   my-bridge-network:
+    driver: bridge
     external: true

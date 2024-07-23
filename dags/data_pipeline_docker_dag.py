@@ -3,27 +3,19 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.models.connection import Connection
 
-# API URLs
-COUNT_LIMIT = 2
+from src.constants import API_DICT
 
-REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
-HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
-JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
-
-API_DICT = {
-    'REMOTIVE': REMOTIVE_API,
-    'HIMALAYAS': HIMALAYAS_API,
-    'JOBICY': JOBICY_API
-    }
 
 DATA_PIPELINE_DAG_SCHD = "0 */6 * * *"
 DATABASE_BACKUP_DAG_SCHD = "0 */6 * * *"
 
 DB_HOST = "project-db"
 
-c = Connection(
+conn_args = Connection(
     conn_id="project_db",
     conn_type="postgres",
     description="Project database in Docker container",
@@ -34,9 +26,10 @@ c = Connection(
     schema=os.environ.get("PGDATABASE")
 )
 
-c.get_uri()
+conn_args.get_uri()
 
 default_args = {
+    "owner": "donatas_repecka",
     "depends_on_past": False,
     "start_date": datetime(2024, 1, 1),
     "email": ["<EMAIL>"],

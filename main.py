@@ -13,7 +13,7 @@ import src.get_api_data as api
 import src.data_preparation as prep
 import src.db_functions.data_upload_sequence as upload
 import src.logger as log
-from src.constants import read_dict, API_DICT
+from src.constants import read_dict, remove_files_in_directory, API_DICT, PATH_TO_DATA_STORAGE
 
 main_logger = log.app_logger(__name__)
 
@@ -47,6 +47,9 @@ if __name__ == '__main__':
             tasks = [executor.submit(api.get_api_data(api_name, api_url)),
                      executor.submit(prep.prepare_json_data(queue, event)),
                      executor.submit(upload.jobs_data_upload_to_db(queue, event))]
+
+            remove_files_in_directory(PATH_TO_DATA_STORAGE)
+            main_logger.error('File "%s" was removed after data upload', api_name)
 
         concurrent.futures.wait(tasks)
     except CancelledError as e:

@@ -16,3 +16,6 @@ BEGIN
    END IF;
 END
 $do$;
+
+CREATE USER airflow WITH PASSWORD 'airflow';
+GRANT ALL PRIVILEGES ON DATABASE jobs_data_db TO airflow;

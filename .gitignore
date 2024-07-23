@@ -9,13 +9,14 @@ src/logger/__pycache__
 src/get_api_data/__pycache__
 src/data_preparation/__pycache__
 src/backup_functions/__pycache__/
-airflow/dags/__pycache__/
+dags/__pycache__/
 
 # OTHER FILES
 dockerfiles/airflow_dockerfiles/dags
 logs/
 backups/
 plugins/
+secrets/
 src/data/
 src/data_preparation/.ipynb_checkpoints
 src/data_preparation/data_preparation.ipynb

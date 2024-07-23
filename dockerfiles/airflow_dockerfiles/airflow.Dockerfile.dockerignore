@@ -17,12 +17,12 @@ src/data_preparation/.ipynb_checkpoints
 src/data_preparation/*.ipynb
 
 # SOURCE FOLDERS
-src/backup_functions
+#src/backup_functions
 src/data
-src/data_preparation
-src/db_functions
-src/get_api_data
-src/logger
+#src/data_preparation
+#src/db_functions
+#src/get_api_data
+#src/logger
 
 # OTHER FOLDERS
 logs/
@@ -32,13 +32,10 @@ dockerfiles/
 
 # OTHER FILES
 main.py
-backups_main.py
-airflow-compose.txt
-misc.txt
+backup_main.py
 README.md
 315.ipynb
 Dockerfile.*
 docker-compose.*
-for_secrets.sh
 *.lock
 *.toml

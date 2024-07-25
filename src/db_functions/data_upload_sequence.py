@@ -7,6 +7,7 @@ from sqlalchemy.exc import OperationalError, DBAPIError, DatabaseError, Disconne
 
 import src.db_functions.db_tables as db_tables
 from src.db_functions.db_connection import db_logger, JobsDataDatabase
+from src.constants import TABLE_TO_UPLOAD
 
 
 class DataUpload(JobsDataDatabase):
@@ -73,7 +74,7 @@ def jobs_data_upload_to_db(queue: Queue, event: Event) -> None:
             db_logger.info('Getting data from queue...')
             dataframe, file_name = queue.get(timeout=5)
 
-            upload.load_to_database(dataframe=dataframe, table_name='jobs_listings_data')
+            upload.load_to_database(dataframe=dataframe, table_name=TABLE_TO_UPLOAD)
             db_logger.info('Data for "%s" was uploaded to a table "jobs_listings_data"', file_name)
 
             queue.task_done()

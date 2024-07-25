@@ -13,14 +13,10 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__ENABLE_XCOM_PICKLING: 'true'
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__ALLOWED_DESERIALIZATION_CLASSES: airflow.* astro.*
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: >
-      postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >
-      postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
-    AIRFLOW_CONN_PROJECT_DB: >
-      postgresql+psycopg2://${PGUSER}:${PGPASSWORD}@project-db:${PGPORT}/${PGDATABASE}
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
-  user: "${AIRFLOW_UID:-50000}:0"
+    user: "${AIRFLOW_UID:-50000}:0"
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - ./dags:/opt/airflow/dags:rw
@@ -40,7 +36,7 @@ x-app-common: &app-common
     PGPASSWORD: ${PGPASSWORD}
     PGPORT: ${PGPORT}
     PGDATABASE: ${PGDATABASE}
-    PGHOST: project-db
+    PGHOST: ${PGHOST}
 
 services:
 

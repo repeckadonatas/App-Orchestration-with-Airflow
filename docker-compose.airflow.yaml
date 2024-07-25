@@ -13,16 +13,19 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__ENABLE_XCOM_PICKLING: 'true'
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__ALLOWED_DESERIALIZATION_CLASSES: airflow.* astro.*
+    TZ: 'UTC'
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: 'UTC'
+    AIRFLOW__WEBSERVER__DEFAULT_UI_TIMEZONE: 'UTC'
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
     user: "${AIRFLOW_UID:-50000}:0"
 #  user: "0:0"
   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock:rwo
-    - ./dags:/opt/airflow/dags:rwo
-    - ./logs:/opt/airflow/logs:rwo
-    - ./src:/opt/airflow/src:rwo
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - ./dags:/opt/airflow/dags:ro
+    - ./logs:/opt/airflow/logs:rw
+    - ./src:/opt/airflow/src:ro
     - /etc/localtime:/etc/localtime:ro
 
 services:
@@ -59,7 +62,7 @@ services:
       --lastname admin \
       --role Admin \
       --email admin@example.com"
-    restart: on-failure
+    restart: always
 
   airflow-webserver:
     <<: *airflow-common

@@ -9,7 +9,7 @@ x-app-common: &app-common
     PGPASSWORD: ${PGPASSWORD}
     PGPORT: ${PGPORT}
     PGDATABASE: ${PGDATABASE}
-    PGHOST: project-db
+    PGHOST: ${PGHOST}
 
 services:
 

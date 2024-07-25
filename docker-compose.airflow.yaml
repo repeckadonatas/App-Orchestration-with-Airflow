@@ -13,20 +13,16 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__ENABLE_XCOM_PICKLING: 'true'
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__ALLOWED_DESERIALIZATION_CLASSES: airflow.* astro.*
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: >
-      postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: >
-      postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
-    AIRFLOW_CONN_PROJECT_DB: >
-      postgresql+psycopg2://${PGUSER}:${PGPASSWORD}@project-db:${PGPORT}/${PGDATABASE}
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
-  user: "${AIRFLOW_UID:-50000}:0"
+    user: "${AIRFLOW_UID:-50000}:0"
 #  user: "0:0"
   volumes:
-    - /var/run/docker.sock:/var/run/docker.sock
-    - ./dags:/opt/airflow/dags:rw
-    - ./logs:/opt/airflow/logs:rw
-    - ./src:/opt/airflow/src:rw
+    - /var/run/docker.sock:/var/run/docker.sock:rwo
+    - ./dags:/opt/airflow/dags:rwo
+    - ./logs:/opt/airflow/logs:rwo
+    - ./src:/opt/airflow/src:rwo
     - /etc/localtime:/etc/localtime:ro
 
 services:
@@ -95,18 +91,6 @@ services:
       timeout: 10s
       retries: 5
     restart: always
-
-secrets:
-  PGUSER:
-    file: ./secrets/pguser.txt
-  PGPASSWORD:
-    file: ./secrets/pgpassword.txt
-  PGPORT:
-    file: ./secrets/pgport.txt
-  PGDATABASE:
-    file: ./secrets/pgdatabase.txt
-  AIRFLOW__WEBSERVER__SECRET_KEY:
-    file: ./secrets/airflow_secret_key.txt
 
 volumes:
   airflow-db-volume:

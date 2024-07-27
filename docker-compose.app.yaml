@@ -11,8 +11,8 @@ x-app-common: &app-common
     PGDATABASE: ${PGDATABASE}
     PGHOST: ${PGHOST}
 
-services:
 
+services:
   project-db:
     <<: *app-common
     image: postgres:15
@@ -35,24 +35,24 @@ services:
   project-app:
     <<: *app-common
     image: notexists/job-application-system-app:1.1
-#    command: ["sleep", "1d"]  # FOR CONTAINER CHECK UP
     depends_on:
       project-db:
         condition: service_healthy
     volumes:
-#      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
+      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
       - ./logs:/app/logs/
 
   project-backup-app:
     <<: *app-common
     image: notexists/db-backup-app:1.1
-#    command: ["sleep", "1d"]  # FOR CONTAINER CHECK UP
     depends_on:
       project-db:
         condition: service_healthy
       project-app:
         condition: service_completed_successfully
     volumes:
+      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
+      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/backups:/app/backups/
       - ./logs:/app/logs/
       - ./backups:/app/backups/
 

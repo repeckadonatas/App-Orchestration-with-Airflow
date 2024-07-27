@@ -19,7 +19,7 @@ api_logger = log.app_logger(__name__)
 
 
 def get_api_data(api_name: str,
-                 api_url: str) -> None:
+                 api_url: str) -> dict | None:
     """
     Get API response and save it as a JSON file.
     The function uses a name and URL to retrieve an API response.
@@ -55,18 +55,23 @@ def get_api_data(api_name: str,
                 and response.headers["content-type"].strip().startswith("application/json")):
             try:
                 json_response = response.json()
+                api_logger.info('Successfully retrieved API response from "%s".\n', api_name)
+                return json_response
 
-                os.makedirs(PATH_TO_DATA_STORAGE, exist_ok=True)
-
-                with open(PATH_TO_DATA_STORAGE / (api_name + '_response.json'), 'w', encoding='utf-8') as f:
-                    json.dump(json_response, f, ensure_ascii=False, indent=4)
-                    api_logger.info('Downloaded API data from "%s."\n', api_name)
+                # os.makedirs(PATH_TO_DATA_STORAGE, exist_ok=True)
+                #
+                # with open(PATH_TO_DATA_STORAGE / (api_name + '_response.json'), 'w', encoding='utf-8') as f:
+                #     json.dump(json_response, f, ensure_ascii=False, indent=4)
+                #     api_logger.info('Downloaded API data from "%s."\n', api_name)
 
             except JSONDecodeError as e:
                 api_logger.info('A JSON decode error occurred for "%s": %s\n', api_name, e, exc_info=True)
+                return None
 
     except (RequestException, URLRequired, InvalidURL, HTTPError) as e:
         api_logger.error('An error occurred for "%s": %s', api_name, e, exc_info=True)
 
     except Exception as e:
         api_logger.error('Unexpected error occurred for "%s": %s\n', api_name, e, exc_info=True)
+
+    return None

@@ -28,7 +28,7 @@ INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 PG_DUMP = 'pg_dump'
 
 # API URLs
-COUNT_LIMIT = 20
+COUNT_LIMIT = 2
 
 REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
 HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"

@@ -3,35 +3,45 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
-from airflow.providers.postgres.operators.postgres import PostgresOperator
-from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.models.connection import Connection
+from pendulum import timezone
 
-from src.constants import API_DICT
+# from src.constants import API_DICT
+
+# conn_args = Connection(
+#     conn_id="project_db",
+#     conn_type="postgres",
+#     description="Project database in Docker container",
+#     login=os.environ.get("PGUSER"),
+#     password=os.environ.get("PGPASSWORD"),
+#     host=os.environ.get("PGHOST"),
+#     port=os.environ.get("PGPORT"),
+#     schema=os.environ.get("PGDATABASE")
+# )
+#
+# conn_args.get_uri()
 
 
-DATA_PIPELINE_DAG_SCHD = "0 */6 * * *"
+# DAG SCHEDULES
+DATA_PIPELINE_DAG_SCHD = "0 */2 * * *"
 DATABASE_BACKUP_DAG_SCHD = "0 */6 * * *"
 
-DB_HOST = "project-db"
+# API URLs
+COUNT_LIMIT = 20
 
-conn_args = Connection(
-    conn_id="project_db",
-    conn_type="postgres",
-    description="Project database in Docker container",
-    login=os.environ.get("PGUSER"),
-    password=os.environ.get("PGPASSWORD"),
-    host=os.environ.get("PGHOST"),
-    port=os.environ.get("PGPORT"),
-    schema=os.environ.get("PGDATABASE")
-)
+REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
+HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
+JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
 
-conn_args.get_uri()
+API_DICT = {'REMOTIVE': REMOTIVE_API,
+            'HIMALAYAS': HIMALAYAS_API,
+            'JOBICY': JOBICY_API
+            }
 
 default_args = {
     "owner": "donatas_repecka",
     "depends_on_past": False,
-    "start_date": datetime(2024, 1, 1),
+    "start_date": datetime(2024, 7, 23, tzinfo=timezone('Europe/Vilnius')),
     "email": ["<EMAIL>"],
     "email_on_failure": False,
     "email_on_retry": False,
@@ -59,7 +69,7 @@ with DAG(
             environment={
                 'PGUSER': os.environ.get('PGUSER'),
                 'PGPASSWORD': os.environ.get('PGPASSWORD'),
-                'PGHOST': DB_HOST,
+                'PGHOST': os.environ.get('PGHOST'),
                 'PGPORT': os.environ.get('PGPORT'),
                 'PGDATABASE': os.environ.get('PGDATABASE')
             },
@@ -86,7 +96,7 @@ with DAG(
         environment={
             'PGUSER': os.environ.get('PGUSER'),
             'PGPASSWORD': os.environ.get('PGPASSWORD'),
-            'PGHOST': DB_HOST,
+            'PGHOST': os.environ.get('PGHOST'),
             'PGPORT': os.environ.get('PGPORT'),
             'PGDATABASE': os.environ.get('PGDATABASE')
         },

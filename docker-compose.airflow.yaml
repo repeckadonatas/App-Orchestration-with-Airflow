@@ -19,17 +19,17 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
-    user: "${AIRFLOW_UID:-50000}:0"
-#  user: "0:0"
+#  user: "${AIRFLOW_UID:-50000}:0"
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock:ro
     - ./dags:/opt/airflow/dags:ro
+    - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
     - ./logs:/opt/airflow/logs:rw
     - ./src:/opt/airflow/src:ro
     - /etc/localtime:/etc/localtime:ro
 
-services:
 
+services:
   airflow-postgres:
     <<: *airflow-common
     image: postgres:14
@@ -79,7 +79,6 @@ services:
       timeout: 10s
       retries: 5
     restart: always
-#    user: "0:0"
 
   airflow-scheduler:
     <<: *airflow-common

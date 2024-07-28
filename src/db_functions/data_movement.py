@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import pytz
 import pandas as pd
 from sqlalchemy import inspect
 from sqlalchemy.dialects.postgresql import JSONB
@@ -54,6 +57,7 @@ class DataUpload(JobsDataDatabase):
         try:
             staging_dataframe = pd.DataFrame([{
                 'api_source': api_name,
+                'timestamp': datetime.now(tz=pytz.timezone('Europe/Vilnius')),
                 'data': json_data
             }])
 
@@ -75,6 +79,34 @@ class DataUpload(JobsDataDatabase):
             db_logger.error("An error occurred while loading the data: %s. "
                             "Rolling back the last transaction", e, exc_info=True)
             self.conn.rollback()
+
+    def get_data_from_staging(self,
+                              staging_schema: str,
+                              staging_table: str,
+                              api_name: str) -> dict:
+        """
+        Gets the latest uploaded API data from the staging table.
+        """
+        try:
+            staging_query = f"""
+            SELECT data FROM {staging_schema}.{staging_table}
+            WHERE api_source = '{api_name}'
+            ORDER BY timestamp DESC
+            LIMIT 1"""
+
+            dataframe = pd.read_sql_query(staging_query,
+                                          con=self.engine,
+                                          params=[api_name])
+
+            if not dataframe.empty:
+                return dataframe['data'].iloc[0]
+            else:
+                db_logger.info('No data found for "%s" in "%s".', api_name, staging_table)
+                return {}
+
+        except Exception as e:
+            db_logger.info('An error occurred while retrieving the data: %s.', e, exc_info=True)
+            return {}
 
     def load_to_database(self,
                          dataframe: pd.DataFrame,

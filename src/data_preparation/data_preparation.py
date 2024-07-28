@@ -6,12 +6,12 @@ to the database.
 
 import json
 import pytz
+from datetime import datetime
+
 import pandas as pd
-from threading import Event
-from queue import Queue
 
 import src.logger as log
-from src.constants import *
+from src.constants import PATH_TO_DATA_STORAGE, REGION_COLUMN
 
 data_logger = log.app_logger(__name__)
 
@@ -200,37 +200,3 @@ def str_to_float_schema(dataframe: pd.DataFrame,
             pass
 
     return dataframe
-
-
-# SETTING THE LOGIC FOR JSON FILE NORMALIZATION
-def prepare_json_data(queue: Queue, event: Event) -> None:
-    """
-    Setting up the sequence in which
-    to execute data preparation functions.
-    The JSON files are turned into pandas DataFrame's
-    and put into a queue.
-    """
-    while not event.is_set():
-        try:
-            json_files = get_files_in_directory(PATH_TO_DATA_STORAGE)
-            data_logger.info('Files found in a directory: %s', json_files)
-
-            for json_file in json_files:
-                json_to_df = create_dataframe(json_file, COLS_NORMALIZE)
-                json_region = assign_region(json_to_df, REGIONS)
-                json_flat = flatten_json_file(json_region)
-                json_salary = salary_extraction(json_flat)
-                json_time = add_timestamp(json_salary)
-                json_names = rename_columns(json_time, COLUMN_RENAME_MAP)
-                json_reorder = reorder_dataframe_columns(json_names, COMMON_TABLE_SCHEMA)
-                json_time_format = change_datetime_format(json_reorder, DATETIME_COLUMNS)
-                json_dtypes = str_to_float_schema(json_time_format, STR_TO_FLOAT_SCHEMA)
-
-                data_logger.info('A dataframe was created for a file: %s', json_file)
-
-                queue.put([json_dtypes, json_file])
-
-            event.set()
-            print()
-        except Exception as e:
-            data_logger.error("An error occurred while creating a dataframe:\n %s\n", e, exc_info=True)

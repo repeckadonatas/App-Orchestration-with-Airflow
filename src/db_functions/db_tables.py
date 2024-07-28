@@ -1,3 +1,6 @@
+from datetime import datetime
+
+import pytz
 from sqlalchemy import Column, String, Float, Integer, JSONB, TIMESTAMP, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -14,6 +17,7 @@ class StagingLayerTable(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     api_source = Column(String())
+    timestamp = Column(DateTime(timezone=True))
     data = Column(JSONB())
 
 

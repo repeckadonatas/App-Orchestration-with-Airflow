@@ -160,6 +160,8 @@ STAGING_TABLE = 'staging_jobs_listings_data'
 
 CLEAN_DATA_TABLE = 'jobs_listings_data'
 
+SCHEMAS_IN_DB = ['public', 'staging']
+
 # REUSABLE FUNCTIONS
 def env_config() -> os.environ:
     """

@@ -16,20 +16,28 @@ from src.constants import PATH_TO_DATA_STORAGE, REGION_COLUMN
 data_logger = log.app_logger(__name__)
 
 
-def create_dataframe(file_json: str,
+def create_dataframe(json_data: dict,
                      cols_normalize: list) -> pd.DataFrame:
     """
     Creates a pandas dataframe from a JSON file.
-    :param file_json: name of the JSON file.
+    :param json_data: JSONB data from a staging table.
     :param cols_normalize: a list with "path" values for json_normalize function.
     :returns: a normalized dataframe
     """
-    with open(PATH_TO_DATA_STORAGE / file_json, 'r', encoding='utf-8') as json_file:
-        json_data = json.load(json_file)
-        if any(column in json_data for column in cols_normalize):
-            df = pd.json_normalize(json_data, cols_normalize, sep='_')
-        else:
-            df = pd.json_normalize(json_data)
+    # with open(PATH_TO_DATA_STORAGE / file_json, 'r', encoding='utf-8') as json_file:
+    #     json_data = json.load(json_file)
+    #     if any(column in json_data for column in cols_normalize):
+    #         df = pd.json_normalize(json_data, cols_normalize, sep='_')
+    #     else:
+    #         df = pd.json_normalize(json_data)
+
+    if not json_data:
+        return pd.DataFrame()
+
+    if any(column in json_data for column in cols_normalize):
+        df = pd.json_normalize(json_data, cols_normalize, sep='_')
+    else:
+        df = pd.json_normalize(json_data)
             
     return df
 

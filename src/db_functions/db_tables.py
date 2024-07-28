@@ -1,6 +1,3 @@
-from datetime import datetime
-
-import pytz
 from sqlalchemy import Column, String, Float, Integer, TIMESTAMP, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base

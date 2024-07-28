@@ -156,7 +156,9 @@ TABLES_TO_CREATE = [
     'jobicy_data'
 ]
 
-TABLE_TO_UPLOAD = 'jobs_listings_data'
+STAGING_TABLE = 'staging_jobs_listings_data'
+
+CLEAN_DATA_TABLE = 'jobs_listings_data'
 
 # REUSABLE FUNCTIONS
 def env_config() -> os.environ:

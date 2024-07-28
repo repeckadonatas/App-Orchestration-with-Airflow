@@ -14,7 +14,6 @@ class StagingLayerTable(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     api_source = Column(String())
-    company_name = Column(String())
     data = Column(JSONB())
 
 

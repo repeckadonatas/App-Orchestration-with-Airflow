@@ -27,17 +27,17 @@ INIT_DB = Path(__file__).cwd() / 'sql/init.sql'
 # PG_DUMP = r'C:\Program Files\PostgreSQL\16\bin\pg_dump.exe'
 PG_DUMP = 'pg_dump'
 
-# API URLs
-COUNT_LIMIT = 2
-
-REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
-HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
-JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
-
-API_DICT = {'REMOTIVE': REMOTIVE_API,
-            'HIMALAYAS': HIMALAYAS_API,
-            'JOBICY': JOBICY_API
-            }
+# API URLs FOR AD-HOC TESTING
+# COUNT_LIMIT = 2
+#
+# REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
+# HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
+# JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
+#
+# API_DICT = {'REMOTIVE': REMOTIVE_API,
+#             'HIMALAYAS': HIMALAYAS_API,
+#             'JOBICY': JOBICY_API
+#             }
 
 # PATHS TO DATA AND FILES
 PATH_TO_DATA_STORAGE = Path(__file__).cwd() / 'src/data'

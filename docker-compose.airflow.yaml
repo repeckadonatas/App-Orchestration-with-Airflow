@@ -5,7 +5,7 @@ x-airflow-common: &airflow-common
   env_file:
     - .env
   environment:
-    PYTHONPATH: /opt/airflow:/opt/airflow/src
+    PYTHONPATH: /opt/airflow:/opt/airflow/src:/opt/airflow/dags
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'

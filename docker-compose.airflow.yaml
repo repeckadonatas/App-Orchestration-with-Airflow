@@ -4,14 +4,15 @@ x-airflow-common: &airflow-common
     - my-bridge-network
   env_file:
     - .env
+#  user: "${AIRFLOW_UID:-50000}:${AIRFLOW_GID:-0}"
   environment:
-    PYTHONPATH: /opt/airflow:/opt/airflow/src:/opt/airflow/dags
+    PYTHONPATH: /opt/airflow:/opt/airflow/src
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__CORE__EXECUTOR: 'LocalExecutor'
     AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
     AIRFLOW__CORE__ALLOW_PICKLE_DESERIALIZE: 'true'
     AIRFLOW__CORE__ENABLE_XCOM_PICKLING: 'true'
-    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
     AIRFLOW__CORE__ALLOWED_DESERIALIZATION_CLASSES: airflow.* astro.*
     TZ: 'UTC'
     AIRFLOW__CORE__DEFAULT_TIMEZONE: 'UTC'
@@ -19,13 +20,12 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: 'postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow'
     AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
-#  user: "${AIRFLOW_UID:-50000}:0"
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock:ro
     - ./dags:/opt/airflow/dags:ro
-    - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
     - ./logs:/opt/airflow/logs:rw
     - ./src:/opt/airflow/src:ro
+    - ./backups:/opt/airflow/backups:rw
     - /etc/localtime:/etc/localtime:ro
 
 
@@ -62,7 +62,7 @@ services:
       --lastname admin \
       --role Admin \
       --email admin@example.com"
-    restart: always
+    restart: on-failure
 
   airflow-webserver:
     <<: *airflow-common

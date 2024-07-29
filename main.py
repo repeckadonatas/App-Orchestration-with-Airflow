@@ -16,8 +16,7 @@ import src.get_api_data as api
 import src.data_preparation as prep
 import src.db_functions.data_movement as db
 import src.logger as log
-from dags.data_pipeline_docker_dag import API_DICT
-from src.constants import (read_dict, STAGING_TABLE,
+from src.constants import (read_dict, API_DICT, STAGING_TABLE,
                            CLEAN_DATA_TABLE, COLS_NORMALIZE, REGIONS,
                            COLUMN_RENAME_MAP, COMMON_TABLE_SCHEMA,
                            DATETIME_COLUMNS, STR_TO_FLOAT_SCHEMA)

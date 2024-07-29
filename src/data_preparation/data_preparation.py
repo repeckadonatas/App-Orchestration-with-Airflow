@@ -30,7 +30,7 @@ def create_dataframe(json_data: dict,
         df = pd.json_normalize(json_data, cols_normalize, sep='_')
     else:
         df = pd.json_normalize(json_data)
-            
+
     return df
 
 
@@ -44,11 +44,12 @@ def assign_region(dataframe: pd.DataFrame,
     """
     region_column = REGION_COLUMN
     region_column_in_df = [column for column in region_column if column in dataframe.columns]
-    
+
     dataframe['region'] = pd.NA
 
     for col in region_column_in_df:
-        dataframe[col] = dataframe[col].apply(lambda x: [x] if isinstance(x, str) else x)
+        dataframe[col] = dataframe[col].apply(
+            lambda x: [country.strip() for country in x.split(',')] if isinstance(x, str) else x)
         for index, row in dataframe.iterrows():
             regions_found = set()
             for country in row[col]:
@@ -59,7 +60,7 @@ def assign_region(dataframe: pd.DataFrame,
                 dataframe.at[index, 'region'] = ', '.join(regions_found)
 
     dataframe = dataframe.drop(columns=region_column, errors='ignore')
-            
+
     return dataframe
 
 
@@ -74,7 +75,7 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
             dataframe_flat = dataframe[column].apply(pd.Series)
             dataframe_new = pd.concat([dataframe, dataframe_flat], axis=1)
             dataframe_new = dataframe_new.drop(columns=[column], axis=1)
-            
+
             for col in dataframe_new.columns:
                 if isinstance(dataframe_new[col][0], list):
                     df_lists = pd.DataFrame(dataframe_new[col].to_list(), index=dataframe_new.index)
@@ -84,7 +85,7 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
                     dataframe_new.fillna(pd.NA)
         else:
             dataframe_new = dataframe.copy()
-            
+
     return dataframe_new
 
 
@@ -102,7 +103,7 @@ def salary_extraction(dataframe: pd.DataFrame) -> pd.DataFrame:
         salary_extract = dataframe['salary'].str.extract(pattern)
         salary_extract.columns = ['min_salary', 'max_salary']
         salary_extract = salary_extract.apply(pd.to_numeric, errors='coerce')
-        
+
         single_salary_mask = salary_extract.isna().all(axis=1)
         single_salaries = dataframe.loc[single_salary_mask, 'salary'].str.extract(r'\$(\d+)')
         single_salaries = single_salaries.apply(pd.to_numeric, errors='coerce')
@@ -120,7 +121,7 @@ def salary_extraction(dataframe: pd.DataFrame) -> pd.DataFrame:
         dataframe_new = dataframe_new.join(salary_extract)
     else:
         dataframe_new = dataframe.copy()
-    
+
     return dataframe_new
 
 
@@ -133,7 +134,7 @@ def add_timestamp(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
     local_timezone = pytz.timezone('Europe/Vilnius')
     dataframe['timestamp'] = datetime.now(tz=local_timezone)
-    
+
     return dataframe
 
 
@@ -147,7 +148,7 @@ def rename_columns(dataframe: pd.DataFrame,
     """
     dataframe.rename(columns=column_rename_map, inplace=True)
     dataframe = dataframe.loc[:, ~dataframe.columns.duplicated()]
-    
+
     return dataframe
 
 
@@ -160,7 +161,7 @@ def reorder_dataframe_columns(dataframe: pd.DataFrame,
     :return: dataframe with reordered columns
     """
     dataframe = dataframe.reindex(columns=reorder_schema, fill_value=None)
-    
+
     return dataframe
 
 

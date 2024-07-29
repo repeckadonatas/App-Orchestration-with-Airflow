@@ -3,23 +3,7 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
-from airflow.models.connection import Connection
 from pendulum import timezone
-
-# from src.constants import API_DICT
-
-# conn_args = Connection(
-#     conn_id="project_db",
-#     conn_type="postgres",
-#     description="Project database in Docker container",
-#     login=os.environ.get("PGUSER"),
-#     password=os.environ.get("PGPASSWORD"),
-#     host=os.environ.get("PGHOST"),
-#     port=os.environ.get("PGPORT"),
-#     schema=os.environ.get("PGDATABASE")
-# )
-#
-# conn_args.get_uri()
 
 
 # DAG SCHEDULES
@@ -35,9 +19,9 @@ JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
 
 API_DICT = {'REMOTIVE': REMOTIVE_API,
             'HIMALAYAS': HIMALAYAS_API,
-            'JOBICY': JOBICY_API
-            }
+            'JOBICY': JOBICY_API}
 
+# DAGs SETUP
 default_args = {
     "owner": "donatas_repecka",
     "depends_on_past": False,

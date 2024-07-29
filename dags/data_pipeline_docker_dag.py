@@ -5,21 +5,12 @@ from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 from pendulum import timezone
 
+from src.constants import API_DICT
+
 
 # DAG SCHEDULES
 DATA_PIPELINE_DAG_SCHD = "0 */2 * * *"
 DATABASE_BACKUP_DAG_SCHD = "0 */6 * * *"
-
-# API URLs
-COUNT_LIMIT = 20
-
-REMOTIVE_API = f"https://remotive.com/api/remote-jobs?limit={COUNT_LIMIT}"
-HIMALAYAS_API = f"https://himalayas.app/jobs/api?limit={COUNT_LIMIT}"
-JOBICY_API = f"https://jobicy.com/api/v2/remote-jobs?count={COUNT_LIMIT}"
-
-API_DICT = {'REMOTIVE': REMOTIVE_API,
-            'HIMALAYAS': HIMALAYAS_API,
-            'JOBICY': JOBICY_API}
 
 # DAGs SETUP
 default_args = {

@@ -7,8 +7,7 @@ import sys
 from threading import Event
 from queue import Queue, Empty
 import concurrent.futures
-from concurrent.futures import (CancelledError, TimeoutError,
-                                BrokenExecutor, InvalidStateError)
+from concurrent.futures import CancelledError, TimeoutError, BrokenExecutor
 
 from sqlalchemy.exc import (OperationalError, DBAPIError, DatabaseError,
                             DisconnectionError, ProgrammingError, SQLAlchemyError)
@@ -17,7 +16,8 @@ import src.get_api_data as api
 import src.data_preparation as prep
 import src.db_functions.data_movement as db
 import src.logger as log
-from src.constants import (read_dict, API_DICT, STAGING_TABLE,
+from dags.data_pipeline_docker_dag import API_DICT
+from src.constants import (read_dict, STAGING_TABLE,
                            CLEAN_DATA_TABLE, COLS_NORMALIZE, REGIONS,
                            COLUMN_RENAME_MAP, COMMON_TABLE_SCHEMA,
                            DATETIME_COLUMNS, STR_TO_FLOAT_SCHEMA)
@@ -65,16 +65,12 @@ def prepare_json_data(api_name: str,
     """
     while not event.is_set():
         try:
-            # json_files = get_files_in_directory(PATH_TO_DATA_STORAGE)
-            # main_logger.info('Files found in a directory: %s', json_files)
-
             with db.DataUpload() as upload:
                 json_data = upload.get_data_from_staging(staging_schema='staging',
                                                          staging_table=STAGING_TABLE,
                                                          api_name=api_name)
                 main_logger.info('Retrieved data for "%s".', api_name)
 
-                # for json_file in json_files:
                 json_to_df = prep.create_dataframe(json_data, COLS_NORMALIZE)
                 json_region = prep.assign_region(json_to_df, REGIONS)
                 json_flat = prep.flatten_json_file(json_region)
@@ -161,7 +157,5 @@ if __name__ == '__main__':
         main_logger.error('TimeoutError occurred while running "main.py": %s\n', e, exc_info=True)
     except BrokenExecutor as e:
         main_logger.error('BrokenExecutor error occurred while running "main.py": %s\n', e, exc_info=True)
-    except InvalidStateError as e:
-        main_logger.error('InvalidStateError occurred while running "main.py": %s\n', e, exc_info=True)
     except Exception as e:
         main_logger.error('An unexpected error occurred while running "main.py": %s\n', e, exc_info=True)

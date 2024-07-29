@@ -39,8 +39,7 @@ services:
       project-db:
         condition: service_healthy
     volumes:
-      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
-      - ./logs:/app/logs/
+      - ./logs:/app/logs:rw
 
   project-backup-app:
     <<: *app-common
@@ -51,10 +50,8 @@ services:
       project-app:
         condition: service_completed_successfully
     volumes:
-      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs:/app/logs/
-      - /mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/backups:/app/backups/
-      - ./logs:/app/logs/
-      - ./backups:/app/backups/
+      - ./logs:/app/logs:rw
+      - ./backups:/app/backups:rw
 
 volumes:
   project-db-data:

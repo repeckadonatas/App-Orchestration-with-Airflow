@@ -145,7 +145,7 @@ COMMON_TABLE_SCHEMA = [
 ]
 
 STR_TO_FLOAT_SCHEMA = [
-    'salary',
+    'salary'
     'min_salary',
     'max_salary'
 ]

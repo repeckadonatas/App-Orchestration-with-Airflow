@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
+from docker.types import Mount
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 from pendulum import timezone
@@ -75,5 +76,8 @@ with DAG(
             'PGPORT': os.environ.get('PGPORT'),
             'PGDATABASE': os.environ.get('PGDATABASE')
         },
+        mount_tmp_dir=False,
+        mounts=[Mount(source='/mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/backups', target='/app/backups',
+                      type='bind')],
         dag=backup_dag
     )

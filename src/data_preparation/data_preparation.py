@@ -99,7 +99,7 @@ def salary_extraction(dataframe: pd.DataFrame) -> pd.DataFrame:
     if 'salary' in dataframe.columns:
         yearly_pattern = r'\$(\d+\.?\d*)[kK]?\s*-\s*\$(\d+\.?\d*)[kK]?'
         hourly_pattern = r'\$(\d+)\s*-?\s*\$(\d+)\s*/hour'
-        single_salary_pattern = r'\$(\d+)'
+        single_salary_pattern = r'\$(\d+\.?\d*)'
 
         yearly_salary_extract = dataframe['salary'].str.extract(yearly_pattern)
         yearly_salary_extract.columns = ['min_salary', 'max_salary']

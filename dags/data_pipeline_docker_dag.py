@@ -49,6 +49,11 @@ with DAG(
                 'PGPORT': os.environ.get('PGPORT'),
                 'PGDATABASE': os.environ.get('PGDATABASE')
             },
+            mount_tmp_dir=False,
+            mounts=[Mount(source='/mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs',
+                          target='/app/logs',
+                          type='bind')
+                    ],
             dag=data_pipeline_dag
         )
 
@@ -77,7 +82,12 @@ with DAG(
             'PGDATABASE': os.environ.get('PGDATABASE')
         },
         mount_tmp_dir=False,
-        mounts=[Mount(source='/mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/backups', target='/app/backups',
-                      type='bind')],
+        mounts=[Mount(source='/mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/backups',
+                      target='/app/backups',
+                      type='bind'),
+                Mount(source='/mnt/d/TURING/PROJECTS/MODULE_3/Job-Application-System/logs',
+                      target='/app/logs',
+                      type='bind')
+                ],
         dag=backup_dag
     )

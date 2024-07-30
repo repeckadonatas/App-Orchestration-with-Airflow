@@ -126,7 +126,8 @@ COLUMN_RENAME_MAP = {
     "jobGeo_0": "region",
     "jobGeo_1": "region",
     "jobGeo_2": "region",
-    "jobType": "job_type"
+    "jobType": "job_type",
+    "employmentType": "job_type"
 }
 
 COMMON_TABLE_SCHEMA = [

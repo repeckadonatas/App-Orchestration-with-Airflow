@@ -3,14 +3,14 @@ Functions used to prepare JSON files from
 API responses before uploading the data
 to the database.
 """
-
-import pytz
 from datetime import datetime
 
+import pytz
 import pandas as pd
+import numpy as np
 
 import src.logger as log
-from src.constants import REGION_COLUMN
+from src.constants import REGION_COLUMN, STR_TO_FLOAT_SCHEMA
 
 data_logger = log.app_logger(__name__)
 
@@ -91,38 +91,60 @@ def flatten_json_file(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 def salary_extraction(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
-    Extracts the values for 'min_salary' and 'max_salary' when the JSON file
-    in 'salary' column contains value as amount per hour.
-    For columns where 'salary' is a single amount, ensures that the correct
-    data type is enforced.
+    Extracts the values for 'min_salary' and 'max_salary' from the 'salary' column.
+    Handles various formats including yearly range, single values, and hourly rates.
     :param dataframe: dataframe to process.
-    :return: processed dataframe.
+    :return: processed dataframe with 'salary', 'min_salary' and 'max_salary' columns.
     """
     if 'salary' in dataframe.columns:
-        pattern = r'\$(\d+)\s*-?\s*\$(\d+)\s*/hour'
-        salary_extract = dataframe['salary'].str.extract(pattern)
-        salary_extract.columns = ['min_salary', 'max_salary']
-        salary_extract = salary_extract.apply(pd.to_numeric, errors='coerce')
+        yearly_pattern = r'\$(\d+\.?\d*)[kK]?\s*-\s*\$(\d+\.?\d*)[kK]?'
+        hourly_pattern = r'\$(\d+)\s*-?\s*\$(\d+)\s*/hour'
+        single_salary_pattern = r'\$(\d+)'
 
-        single_salary_mask = salary_extract.isna().all(axis=1)
-        single_salaries = dataframe.loc[single_salary_mask, 'salary'].str.extract(r'\$(\d+)')
+        yearly_salary_extract = dataframe['salary'].str.extract(yearly_pattern)
+        yearly_salary_extract.columns = ['min_salary', 'max_salary']
+        yearly_salary_extract = yearly_salary_extract.apply(pd.to_numeric, errors='coerce')
+
+        hourly_salary_extract = dataframe['salary'].str.extract(hourly_pattern)
+        hourly_salary_extract.columns = ['min_salary', 'max_salary']
+        hourly_salary_extract = hourly_salary_extract.apply(pd.to_numeric, errors='coerce')
+
+        single_salary_mask = (yearly_salary_extract.isna().all(axis=1)
+                              & hourly_salary_extract.isna().all(axis=1))
+        single_salaries = dataframe.loc[single_salary_mask, 'salary'].str.extract(single_salary_pattern)
         single_salaries = single_salaries.apply(pd.to_numeric, errors='coerce')
 
-        salary_extract['min_salary'] = salary_extract['min_salary'].astype(float)
-        salary_extract['max_salary'] = salary_extract['max_salary'].astype(float)
+        dataframe['min_salary'] = np.nan
+        dataframe['max_salary'] = np.nan
 
-        salary_extract.loc[single_salary_mask, 'salary'] = single_salaries[0].astype(float)
+        yearly_mask = ~yearly_salary_extract['min_salary'].isna()
+        dataframe.loc[yearly_mask, 'min_salary'] = yearly_salary_extract.loc[yearly_mask, 'min_salary']
+        dataframe.loc[yearly_mask, 'max_salary'] = yearly_salary_extract.loc[yearly_mask, 'max_salary']
 
-        salary_extract['min_salary'] = salary_extract['min_salary'] * 40 * 52
-        salary_extract['max_salary'] = salary_extract['max_salary'] * 40 * 52
-        salary_extract['salary_currency'] = 'USD'
+        hourly_mask = ~hourly_salary_extract['min_salary'].isna()
+        dataframe.loc[hourly_mask, 'min_salary'] = hourly_salary_extract.loc[hourly_mask, 'min_salary'] * 40 * 52
+        dataframe.loc[hourly_mask, 'max_salary'] = hourly_salary_extract.loc[hourly_mask, 'max_salary'] * 40 * 52
 
-        dataframe_new = dataframe.drop(columns=['salary'], axis=1)
-        dataframe_new = dataframe_new.join(salary_extract)
-    else:
-        dataframe_new = dataframe.copy()
+        dataframe.loc[single_salary_mask, 'min_salary'] = single_salaries[0]
+        dataframe.loc[single_salary_mask, 'max_salary'] = single_salaries[0]
 
-    return dataframe_new
+        dataframe['min_salary'] = dataframe['min_salary'].apply(lambda x: x * 1000 if pd.notna(x) and x < 10000 else x)
+        dataframe['max_salary'] = dataframe['max_salary'].apply(lambda x: x * 1000 if pd.notna(x) and x < 10000 else x)
+
+        salary_float = dataframe['salary'].str.extract(single_salary_pattern)[0].astype(float)
+        salary_k_mask = dataframe['salary'].str.contains('[kK]', na=False)
+        dataframe['salary'] = salary_float * 1000 * salary_k_mask.astype(int) + salary_float * (~salary_k_mask)
+
+        if 'salary_currency' not in dataframe.columns:
+            dataframe['salary_currency'] = 'USD'
+
+        for col in STR_TO_FLOAT_SCHEMA:
+            if col in dataframe.columns:
+                dataframe[col] = dataframe[col].astype(float)
+
+        dataframe = dataframe.drop(columns=['salary'], axis=1)
+
+    return dataframe
 
 
 def add_timestamp(dataframe: pd.DataFrame) -> pd.DataFrame:

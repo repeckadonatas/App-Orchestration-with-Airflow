@@ -4,6 +4,7 @@ of creating backups of a database
 and where the backups are saved.
 """
 
+import shutil
 import subprocess
 
 import src.db_functions.db_connection as dbc
@@ -35,3 +36,26 @@ def database_backup() -> None:
         backup_logger.error('Backup file was not found: %s', e)
     except Exception as e:
         backup_logger.error('An unexpected error occurred during database backup: %s', e)
+
+
+def remove_old_backups() -> None:
+    """
+    A function to keep only the latest 10 backups.
+    Backups are stored in folders named 'backup_'
+    followed with a date for the day of the backup.
+    Only the latest 10 backups are stored while the
+    older backups are removed.
+    """
+    try:
+        backup_folders = [folder for folder in PATH_TO_BACKUPS.iterdir()
+                          if folder.is_dir() and folder.name.startswith('backup_')]
+        backup_folders.sort()
+
+        if len(backup_folders) > 10:
+            folders_to_remove = backup_folders[10:]
+            for folder in folders_to_remove:
+                shutil.rmtree(folder)
+
+                backup_logger.info('Removed old backup folder: %s', folder)
+    except Exception as e:
+        backup_logger.error('Error occured during old backup removal: %s', str(e))

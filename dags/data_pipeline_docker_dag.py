@@ -10,7 +10,7 @@ from src.constants import API_DICT
 
 
 # DAG SCHEDULES
-DATA_PIPELINE_DAG_SCHD = "0 */2 * * *"
+DATA_PIPELINE_DAG_SCHD = "0 */4 * * *"
 DATABASE_BACKUP_DAG_SCHD = "0 */6 * * *"
 
 # DAGs SETUP
